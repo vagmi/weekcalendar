@@ -1,4 +1,20 @@
-
+/*
+ * jQuery.weekCalendar v1.0-alpha
+ * http://www.redredred.com.au/
+ *
+ * Requires:
+ * - jquery.weekcalendar.css
+ * - jquery 1.3.x
+ * - jquery-ui 1.7.x (drag, drop, resize)
+ *
+ * Copyright (c) 2009 Rob Monie
+ * Dual licensed under the MIT and GPL licenses:
+ *   http://www.opensource.org/licenses/mit-license.php
+ *   http://www.gnu.org/licenses/gpl.html
+ *   
+ *   Special thanks to Adam Shaw who's fullcalendar plugin (http://arshaw.com/fullcalendar/)
+ *   inspired the creation of this plugin. 
+ */
 (function($) {
 	
 	var dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -207,7 +223,10 @@
 		
 		$calendar.find(".week-calendar-header td.day-column-header").each(function(i, val) {
 				$(this).html(dayNames[i] + "<br/>" + monthNames[currentDay.getMonth()] + ", " + currentDay.getDate() + ", " + currentDay.getFullYear());
-				currentDay = addDays(currentDay, 1);
+				if(isToday(currentDay)) {
+                    $(this).addClass("today");
+                }
+                currentDay = addDays(currentDay, 1);
 			
 		});
 		
@@ -215,9 +234,12 @@
 
 		var $weekDayColumns = $calendar.find(".week-calendar-time-slots .day-column-inner");
 		$weekDayColumns.each(function(i, val) {
+            
 			$(this).data("startDate", cloneDate(currentDay));
 			$(this).data("endDate", new Date(currentDay.getTime() + (MILLIS_IN_DAY - 1)));			
-			
+			if(isToday(currentDay)) {
+                $(this).parent().addClass("today");
+            }
 			
 			addDroppableToWeekDay($(this), options);
 			addDraggableSelectionToWeekDay($(this), options)
@@ -499,6 +521,14 @@
 	function amOrPm(hourOfDay) {
 		return hourOfDay < 12 ? "AM" : "PM";
 	}
+    
+    function isToday(date) {
+        var clonedDate = cloneDate(date);
+        clearTime(clonedDate);
+        var today = new Date();
+        clearTime(today);
+        return today.getTime() === clonedDate.getTime();
+    }
 
 	function cleanEvents(events) {
 		$.each(events, function(i, event) {
