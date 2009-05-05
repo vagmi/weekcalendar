@@ -53,7 +53,8 @@
 			eventDrop : function(calEvent, element){},
 			eventResize : function(calEvent, element){},
 			eventNew : function(calEvent, element) {},
-			calendarRendered : function(calendar) {}
+			calendarRendered : function(calendar) {},
+            noEvents : function() {}
 			
 			
 		}, options);
@@ -78,13 +79,13 @@
 			function prevWeek() {
 				var newDate = new Date($calendar.data("startDate").getTime() - MILLIS_IN_WEEK);
 				clearCalendar($calendar);	
-				loadCalendar($calendar, option, newDate);
+				loadCalendar($calendar, options, newDate);
 			}
 		
 			function nextWeek() {
 				var newDate = new Date($calendar.data("startDate").getTime() + MILLIS_IN_WEEK);
 				clearCalendar($calendar);
-				loadCalendar($calendar, option, newDate); 
+				loadCalendar($calendar, options, newDate); 
 			}
 		
 			function gotoWeek(date) {
@@ -281,13 +282,16 @@
 	
 	
 	function renderEvents(events, $weekDayColumns, options) {
-		$.each(events, function(i, calEvent){
-			var $weekDay = findWeekDayForEvent(calEvent, $weekDayColumns);
-			if($weekDay) {
-				renderEvent(calEvent, $weekDay, options);
-			}
-		});	
-		
+        
+			$.each(events, function(i, calEvent){
+				var $weekDay = findWeekDayForEvent(calEvent, $weekDayColumns);
+				if($weekDay) {
+					renderEvent(calEvent, $weekDay, options);
+				}
+			});	
+        if(!$weekDayColumns.find("cal-event:first").length) {
+            options.noEvents();
+        }
 		
 	}
 	
@@ -306,7 +310,7 @@
 	
 	function updateEventInCalendar(calEvent, options, $calendar) {
 		cleanEvent(calEvent);
-		var $event;
+		var $calEvent;
 		$calendar.find(".cal-event").each(function(){
 			if($(this).data("calEvent").id === calEvent.id) {
 				$(this).remove();
@@ -328,9 +332,9 @@
 			<div class=\"time ui-corner-all\"></div>\
 			<div class=\"title\"><p></p></div></div>";
 		
-		var $event = options.eventRender(calEvent, $(eventHtml)).appendTo($weekDay);
+		var $calEvent = options.eventRender(calEvent, $(eventHtml)).appendTo($weekDay);
 
-		refeshEventDetails(calEvent, $event);
+		refeshEventDetails(calEvent, $calEvent);
 		
 		//position the event
 		var pxPerMillis = $weekDay.height() / MILLIS_IN_DAY;	
@@ -338,10 +342,10 @@
 		var eventMillis = calEvent.end.getTime() - calEvent.start.getTime();	
 		var pxTop = pxPerMillis * startMillisFromStartOfDay;
 		var pxHeight = pxPerMillis * eventMillis;
-		$event.css({top: pxTop, height: pxHeight}).show();
+		$calEvent.css({top: pxTop, height: pxHeight}).show();
 		
 		//prevent mousedown / up / click when clicking on an event
-		$event.mousedown(function(event) {
+		$calEvent.mousedown(function(event) {
 			$weekDay.data("mousedown.preventCreate", true);
 		    setTimeout(function(){
 				$weekDay.removeData("mousedown.preventCreate");
@@ -353,26 +357,30 @@
 		    }, 500);
 		});
 		
-		$event.click(function(event) {
-			if(!$event.data("preventClickEvent")) {
-				options.eventClick(calEvent, $event);
+		$calEvent.click(function(event) {
+			if(!$calEvent.data("preventClickEvent")) {
+				options.eventClick(calEvent, $calEvent, event);
 			}
+		}).mouseover(function(event){
+            options.eventMouseover(calEvent, $calEvent, event);
+        }).mouseout(function(event){
+            options.eventMouseout(calEvent, $calEvent, event);
+        });
+		
+		
+		
+		if(options.resizable(calEvent, $calEvent)) {
+			addResizableToCalEvent(calEvent, $calEvent, $weekDay, options)
+		}
+		if(options.draggable(calEvent, $calEvent)) {
+			addDraggableToCalEvent(calEvent, $calEvent, $weekDay, options);
+		}
+		
+		$calEvent.click(function(){
+			options.eventClick(calEvent, $calEvent);
 		});
 		
-		
-		
-		if(options.resizable(calEvent, $event)) {
-			addResizableToCalEvent(calEvent, $event, $weekDay, options)
-		}
-		if(options.draggable(calEvent, $event)) {
-			addDraggableToCalEvent(calEvent, $event, $weekDay, options);
-		}
-		
-		$event.click(function(){
-			options.eventClick(calEvent, $event);
-		});
-		
-		return $event;
+		return $calEvent;
 		
 	}
 	
@@ -430,10 +438,10 @@
 		
 	}
 	
-	function getEventDurationFromPositionedEventElement($weekDay, $event, top, options) {
+	function getEventDurationFromPositionedEventElement($weekDay, $calEvent, top, options) {
 		 var timeslotHeight = $weekDay.height() / options.timeslotsPerDay;
 		 var start = new Date($weekDay.data("startDate").getTime() + Math.round(top / timeslotHeight) * options.millisPerTimeslot);
-	     var end = new Date(start.getTime() + ($event.height() / timeslotHeight) * options.millisPerTimeslot);
+	     var end = new Date(start.getTime() + ($calEvent.height() / timeslotHeight) * options.millisPerTimeslot);
 		 return {start: start, end: end};
 	}
 	
@@ -442,62 +450,62 @@
 		$weekDay.droppable({
 			accept: ".cal-event",
 		    drop: function(event, ui) {
-		    	var $event = ui.draggable;
+		    	var $calEvent = ui.draggable;
 		        var timeslotHeight = $weekDay.height() / options.timeslotsPerDay;
 		        var top = Math.round(parseInt(ui.position.top));
-		        var eventDuration = getEventDurationFromPositionedEventElement($weekDay, $event, top, options);
-				var calEvent = $event.data("calEvent");
+		        var eventDuration = getEventDurationFromPositionedEventElement($weekDay, $calEvent, top, options);
+				var calEvent = $calEvent.data("calEvent");
 				calEvent.start = eventDuration.start;
 				calEvent.end = eventDuration.end;
 				var $newEvent = renderEvent(calEvent, $weekDay, options);
 				options.eventDrop(calEvent, $newEvent);
-				$event.remove();
+				$calEvent.remove();
 
-		        $event.data("preventClickEvent", true);
-		        setTimeout(function(){$event.removeData("preventClickEvent");}, 500);
+		        $calEvent.data("preventClickEvent", true);
+		        setTimeout(function(){$calEvent.removeData("preventClickEvent");}, 500);
 
 		                        
 			}
 		});
 	}
 	
-	function addDraggableToCalEvent(calEvent, $event, $weekDay, options) {
+	function addDraggableToCalEvent(calEvent, $calEvent, $weekDay, options) {
 		var timeslotHeight = $weekDay.height() / options.timeslotsPerDay;
-		$event.draggable({
+		$calEvent.draggable({
 	       	handle : ".time",
          	containment: ".calendar-scrollable-grid",
 	        opacity: 0.5,
-	        grid : [$event.outerWidth() + 1, timeslotHeight ]
+	        grid : [$calEvent.outerWidth() + 1, timeslotHeight ]
        	});
 		
 	}
 	
-	function addResizableToCalEvent(calEvent, $event, $weekDay, options) {
+	function addResizableToCalEvent(calEvent, $calEvent, $weekDay, options) {
 		var timeslotHeight = $weekDay.height() / options.timeslotsPerDay;
-		$event.resizable({
+		$calEvent.resizable({
 	    	grid: timeslotHeight,
 	        containment : $weekDay,
 	        handles: "s",
 	        minHeight: timeslotHeight,
 	        stop :function(event, ui){
-	        	var $event = ui.element;  
+	        	var $calEvent = ui.element;  
 	
-	 			var newEnd = new Date($event.data("calEvent").start.getTime() + ($event.height() / timeslotHeight) * options.millisPerTimeslot);
+	 			var newEnd = new Date($calEvent.data("calEvent").start.getTime() + ($calEvent.height() / timeslotHeight) * options.millisPerTimeslot);
 				calEvent.end = newEnd;
-				refeshEventDetails(calEvent, $event)
-	    		options.eventResize(calEvent, $event);
-	            $event.data("preventClickEvent", true);
+				refeshEventDetails(calEvent, $calEvent)
+	    		options.eventResize(calEvent, $calEvent);
+	            $calEvent.data("preventClickEvent", true);
 	            setTimeout(function(){
-					$event.removeData("preventClickEvent");}, 500);
+					$calEvent.removeData("preventClickEvent");}, 500);
 	             }
 	    });
 	}
 	
 	
-	function refeshEventDetails(calEvent, $event) {
-		$event.data("calEvent", calEvent);
-		$event.find(".time").text(formatAsTime(calEvent.start) + " to " +  formatAsTime(calEvent.end));
-		$event.find(".title p").text(calEvent.title);
+	function refeshEventDetails(calEvent, $calEvent) {
+		$calEvent.data("calEvent", calEvent);
+		$calEvent.find(".time").text(formatAsTime(calEvent.start) + " to " +  formatAsTime(calEvent.end));
+		$calEvent.find(".title p").text(calEvent.title);
 	}
 	
 	function clearCalendar($calendar) {
