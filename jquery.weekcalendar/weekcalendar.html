@@ -34,8 +34,21 @@
 <script type='text/javascript' src='jquery.weekcalendar.js'></script>
 <script type='text/javascript'>
 
-	var events = [{"end":"2009-05-06T11:45:00.000+10:00","id":10182,"start":"2009-05-06T11:15:00.000+10:00","title":"Simone Davies"},{"end":"2009-05-08T12:45:00.000+10:00","id":10176,"start":"2009-05-08T12:00:00.000+10:00","title":"Simone Davies"},{"end":"2009-05-04T14:30:00.000+10:00","id":10163,"start":"2009-05-04T14:00:00.000+10:00","title":"carl lewis"},{"end":"2009-05-04T12:15:00.000+10:00","id":10180,"start":"2009-05-04T11:45:00.000+10:00","title":"John Matthews"},{"end":"2009-05-04T15:30:00.000+10:00","id":10170,"start":"2009-05-04T15:00:00.000+10:00","title":"carl lewis"}];
 
+	var year = new Date().getFullYear();
+	var month = new Date().getMonth();
+	var day = new Date().getDate();
+
+	var events = [
+	   {"id":1, "start": new Date(year, month, day, 12), "end": new Date(year, month, day, 13, 30),"title":"Lunch with Mike"},
+	   {"id":2, "start": new Date(year, month, day, 14), "end": new Date(year, month, day, 14, 45),"title":"Dev Meeting"},
+	   {"id":3, "start": new Date(year, month, day + 1, 18), "end": new Date(year, month, day + 1, 18, 45),"title":"Haircut"},
+	   {"id":4, "start": new Date(year, month, day - 1, 8), "end": new Date(year, month, day - 1, 9, 30),"title":"Team breakfast"},
+	   {"id":5, "start": new Date(year, month, day + 1, 14), "end": new Date(year, month, day + 1, 15),"title":"Product showcase"}
+	];
+
+
+	   
 	$(document).ready(function() {
 
 		$('#calendar').weekCalendar({

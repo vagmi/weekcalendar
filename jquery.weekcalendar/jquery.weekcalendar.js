@@ -83,13 +83,15 @@
 			}
 		
 			function prevWeek() {
-				var newDate = new Date($calendar.data("startDate").getTime() - MILLIS_IN_WEEK);
+                //minus more than 1 day to be sure we're in previous week - account for daylight savings or other anomolies
+				var newDate = new Date($calendar.data("startDate").getTime() - (MILLIS_IN_WEEK / 6));
 				clearCalendar($calendar);	
 				loadCalendar($calendar, options, newDate);
 			}
 		
 			function nextWeek() {
-				var newDate = new Date($calendar.data("startDate").getTime() + MILLIS_IN_WEEK);
+                //add 8 days to be sure of being in prev week - allows for daylight savings or other anomolies
+				var newDate = new Date($calendar.data("startDate").getTime() + MILLIS_IN_WEEK + (MILLIS_IN_WEEK / 7));
 				clearCalendar($calendar);
 				loadCalendar($calendar, options, newDate); 
 			}
@@ -209,7 +211,7 @@
 		for(var i=0 ; i<24; i++) {
 
 			var bhClass = (options.businessHours.start <= i && options.businessHours.end >= i) ? "business-hours" : "";					
-			calendarBodyHtml += "<div class=\"hour-header " + bhClass + "\" id=\"hour-header-" + i + "\">\
+			calendarBodyHtml += "<div class=\"hour-header " + bhClass + "\">\
 					<div class=\"time-header-cell\">" + hourForIndex(i) + "<span class=\"am-pm\">" + amOrPm(i) + "</span></div></div>";
 		}
 		
@@ -236,8 +238,8 @@
 		});
 		$calendarContainer.find(".time-slot").height(timeslotHeight -1); //account for border
 		$calendarContainer.find(".time-header-cell").outerHeight((timeslotHeight * options.timeslotsPerHour));
-		//((timeslotHeight * options.timeslotsPerHour) - (timeslotHeaderPadding * 2 ) + 2)	
 		
+        scrollToHour($calendar, new Date().getHours());
 	}
 	
 	function loadCalendar($calendar, options, date) {
@@ -319,7 +321,7 @@
 					renderEvent(calEvent, $weekDay, options);
 				}
 			});	
-        if(!$weekDayColumns.find("cal-event:first").length) {
+        if(!$weekDayColumns.find(".cal-event:first").length) {
             options.noEvents();
         }
 		
@@ -541,6 +543,14 @@
 	function clearCalendar($calendar) {
 		$calendar.find(".day-column-inner div").remove();
 	}
+    
+    function scrollToHour($calendar, hour) {
+        var $scrollable = $calendar.find(".calendar-scrollable-grid");
+        var $target = $calendar.find(".grid-timeslot-header .hour-header:eq(" + hour + ")");
+		var targetOffset = $target.offset().top;
+		var scroll = targetOffset - $scrollable.offset().top - $target.outerHeight();
+		$scrollable.animate({scrollTop: scroll});
+    }
 	
 	function formatAsTime(date) {
 		return zeroPad(hourForIndex(date.getHours()), 2) + ":" + zeroPad(date.getMinutes(), 2) + " " + amOrPm(date.getHours());
