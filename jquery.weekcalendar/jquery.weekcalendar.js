@@ -158,9 +158,9 @@
 		
         if(options.buttons) {
             var calendarNavHtml = "<div class=\"calendar-nav\">\
-                <button class=\"today ui-state-default ui-corner-all\">" + options.buttonText.today + "</button>\
-                <button class=\"prev ui-state-default ui-corner-all\">" + options.buttonText.lastWeek + "</button>\
-                <button class=\"next ui-state-default ui-corner-all\">" + options.buttonText.nextWeek + "</button>\
+                <button class=\"today\">" + options.buttonText.today + "</button>\
+                <button class=\"prev\">" + options.buttonText.lastWeek + "</button>\
+                <button class=\"next\">" + options.buttonText.nextWeek + "</button>\
                 </div>";
                 
             $(calendarNavHtml).appendTo($calendarContainer);
@@ -227,17 +227,20 @@
 		$(calendarHeaderHtml + calendarBodyHtml).appendTo($calendarContainer);
 		
 		var $weekDayColumns = $calendarContainer.find(".week-calendar-time-slots .day-column-inner");
-		var columnHeight;
-		var timeslotHeight;
+		var timeslotHeight = 20;
+        var columnHeight = (timeslotHeight * options.timeslotsPerDay);
 		$weekDayColumns.each(function(i, val) {
-			if(i==0) {
-				columnHeight = $(this).parent().height();
-				timeslotHeight = columnHeight / options.timeslotsPerDay;
-			}
 			$(this).height(columnHeight);	
 		});
 		$calendarContainer.find(".time-slot").height(timeslotHeight -1); //account for border
-		$calendarContainer.find(".time-header-cell").outerHeight((timeslotHeight * options.timeslotsPerHour));
+        
+        var headerHeight = (timeslotHeight * options.timeslotsPerHour) - 11;
+        
+        $calendarContainer.find(".time-header-cell").css({
+                height :  headerHeight,
+                padding: 5
+                });
+
 		
         scrollToHour($calendar, new Date().getHours());
 	}
@@ -274,7 +277,7 @@
                 $(this).parent().addClass("today");
             }
 			
-			addDroppableToWeekDay($(this), options);
+			addDroppableToWeekDay($(this), $weekDayColumns, options);
 			addDraggableSelectionToWeekDay($(this), options)
 			
 			currentDay = addDays(currentDay, 1);
@@ -478,23 +481,30 @@
 	}
 	
 	
-	function addDroppableToWeekDay($weekDay, options) {
+	function addDroppableToWeekDay($weekDay, $weekDayColumns, options) {
 		$weekDay.droppable({
 			accept: ".cal-event",
 		    drop: function(event, ui) {
 		    	var $calEvent = ui.draggable;
-		        var timeslotHeight = $weekDay.height() / options.timeslotsPerDay;
-		        var top = Math.round(parseInt(ui.position.top));
-		        var eventDuration = getEventDurationFromPositionedEventElement($weekDay, $calEvent, top, options);
-				var calEvent = $calEvent.data("calEvent");
-				calEvent.start = eventDuration.start;
-				calEvent.end = eventDuration.end;
-				var $newEvent = renderEvent(calEvent, $weekDay, options);
-				options.eventDrop(calEvent, $newEvent);
-				$calEvent.remove();
+                var timeslotHeight = $weekDay.height() / options.timeslotsPerDay;
+                var top = Math.round(parseInt(ui.position.top));
+                var eventDuration = getEventDurationFromPositionedEventElement($weekDay, $calEvent, top, options);
+                var calEvent = $calEvent.data("calEvent");
+                
+                calEvent.start = eventDuration.start;
+                calEvent.end = eventDuration.end;
+                $calEvent.hide();
+                var $newEvent = renderEvent(calEvent, $weekDay, options);
+                
+                options.eventDrop(calEvent, $newEvent);
+                            
 
-		        $calEvent.data("preventClickEvent", true);
-		        setTimeout(function(){$calEvent.removeData("preventClickEvent");}, 500);
+                $newEvent.data("preventClickEvent", true);
+                setTimeout(function(){
+                    $newEvent.removeData("preventClickEvent");
+                    $calEvent.remove(); // not sure why but delaying the remove fixes a bug in IE7
+                }, 500);
+
 
 		                        
 			}
