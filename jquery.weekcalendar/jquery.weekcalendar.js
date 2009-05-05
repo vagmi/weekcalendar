@@ -46,6 +46,12 @@
 			newEventText : "New Event",
 			defaultEventLength : 2,
 			timeslotsPerHour : 4,
+            buttons : true,
+            buttonText : {
+                today : "today",
+                lastWeek : "&lt;",
+                nextWeek : "&gt;"
+            },
 			draggable : function(calEvent, element) { return true;},
 			resizable : function(calEvent, element) { return true;},
 			eventClick : function(){},
@@ -137,16 +143,40 @@
 		if($.isFunction(options.height)) {
 			var calendarHeight = options.height($calendar);
 			var headerHeight = $calendar.find(".week-calendar-header").outerHeight();
-			$calendar.find(".calendar-scrollable-grid").height(calendarHeight - headerHeight);
+            var navHeight = $calendar.find(".calendar-nav").outerHeight();
+			$calendar.find(".calendar-scrollable-grid").height(calendarHeight - navHeight - headerHeight);
 		}
 		
 	}
 
 
 	
-	function renderCalendar(calendar, options) {
-		var $calendarContainer = $("<div class=\"week-calendar\">").appendTo(calendar);
+	function renderCalendar($calendar, options) {
+		var $calendarContainer = $("<div class=\"week-calendar\">").appendTo($calendar);
 		
+        if(options.buttons) {
+            var calendarNavHtml = "<div class=\"calendar-nav\">\
+                <button class=\"today ui-state-default ui-corner-all\">" + options.buttonText.today + "</button>\
+                <button class=\"prev ui-state-default ui-corner-all\">" + options.buttonText.lastWeek + "</button>\
+                <button class=\"next ui-state-default ui-corner-all\">" + options.buttonText.nextWeek + "</button>\
+                </div>";
+                
+            $(calendarNavHtml).appendTo($calendarContainer);
+            
+            $calendarContainer.find(".calendar-nav .today").click(function(){
+                $calendar.weekCalendar("today");
+            });
+            
+            $calendarContainer.find(".calendar-nav .prev").click(function(){
+                $calendar.weekCalendar("prevWeek");
+            });
+            
+            $calendarContainer.find(".calendar-nav .next").click(function(){
+                $calendar.weekCalendar("nextWeek");
+            });
+            
+        }
+        
 		//render calendar header
 		var calendarHeaderHtml = "<table class=\"week-calendar-header\"><tbody><tr><td class=\"time-column-header\"></td>"; 
 		for(var i=1 ; i<=7; i++) {
@@ -217,7 +247,7 @@
 		var firstDayOfWeek = dateFirstDayOfWeek(date);
 
 		$calendar.data("startDate", dateFirstDayOfWeek(firstDayOfWeek));
-		var endDate = dateLastDayOfWeek(options.date)
+		var endDate = dateLastDayOfWeek(date)
 		$calendar.data("endDate", dateLastMilliOfWeek(date));
 		
 		var currentDay = firstDayOfWeek;
@@ -231,7 +261,7 @@
 			
 		});
 		
-		currentDay = dateFirstDayOfWeek(options.date);
+		currentDay = dateFirstDayOfWeek(date);
 
 		var $weekDayColumns = $calendar.find(".week-calendar-time-slots .day-column-inner");
 		$weekDayColumns.each(function(i, val) {
@@ -597,6 +627,14 @@
 		}
 		return strNumber;
 	}
+    
+    function clearTime(d) {
+        d.setHours(0); 
+        d.setMinutes(0);
+        d.setSeconds(0); 
+        d.setMilliseconds(0);
+        return d;
+    }
 	
 	function addDays(d, n, keepTime) {
 		d.setDate(d.getDate() + n);
@@ -604,13 +642,7 @@
 		return clearTime(d);
 	}
 	
-	function clearTime(d) {
-		d.setHours(0); 
-		d.setMinutes(0);
-		d.setSeconds(0); 
-		d.setMilliseconds(0);
-		return d;
-	}
+	
 	
 	function cloneDate(d) {
 		return new Date(+d);

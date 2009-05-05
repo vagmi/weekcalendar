@@ -1,3 +1,11 @@
+
+
+.week-calendar .calendar-nav {
+	padding: 1em;
+	text-align: right;	
+}
+
+
 .week-calendar table {
 	border-collapse: collapse;
     border-spacing: 0;
