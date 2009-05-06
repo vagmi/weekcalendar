@@ -1,5 +1,5 @@
 /*
- * jQuery.weekCalendar v1.0-alpha
+ * jQuery.weekCalendar v1.0-alpha-2
  * http://www.redredred.com.au/
  *
  * Requires:
@@ -49,8 +49,8 @@
             buttons : true,
             buttonText : {
                 today : "today",
-                lastWeek : "&lt;",
-                nextWeek : "&gt;"
+                lastWeek : "&nbsp;&lt;&nbsp;",
+                nextWeek : "&nbsp;&gt;&nbsp;"
             },
 			draggable : function(calEvent, element) { return true;},
 			resizable : function(calEvent, element) { return true;},
@@ -242,7 +242,7 @@
                 });
 
 		
-        scrollToHour($calendar, new Date().getHours());
+        
 	}
 	
 	function loadCalendar($calendar, options, date) {
@@ -261,6 +261,8 @@
 				$(this).html(dayNames[i] + "<br/>" + monthNames[currentDay.getMonth()] + ", " + currentDay.getDate() + ", " + currentDay.getFullYear());
 				if(isToday(currentDay)) {
                     $(this).addClass("today");
+                } else {
+                    $(this).removeClass("today");
                 }
                 currentDay = addDays(currentDay, 1);
 			
@@ -275,6 +277,8 @@
 			$(this).data("endDate", new Date(currentDay.getTime() + (MILLIS_IN_DAY - 1)));			
 			if(isToday(currentDay)) {
                 $(this).parent().addClass("today");
+            } else {
+                $(this).parent().removeClass("today");
             }
 			
 			addDroppableToWeekDay($(this), $weekDayColumns, options);
@@ -312,6 +316,7 @@
 		}
 		
 		disableTextSelect($weekDayColumns);
+        scrollToHour($calendar, new Date().getHours());
 		
 	}
 	
@@ -559,7 +564,7 @@
         var $target = $calendar.find(".grid-timeslot-header .hour-header:eq(" + hour + ")");
 		var targetOffset = $target.offset().top;
 		var scroll = targetOffset - $scrollable.offset().top - $target.outerHeight();
-		$scrollable.animate({scrollTop: scroll});
+		$scrollable.animate({scrollTop: scroll}, 500);
     }
 	
 	function formatAsTime(date) {
@@ -604,14 +609,14 @@
 
 	function disableTextSelect($elements) {
 		$elements.each(function(){
-		            if($.browser.mozilla){//Firefox
-		                $(this).css('MozUserSelect','none');
-		            }else if($.browser.msie){//IE
-		                $(this).bind('selectstart',function(){return false;});
-		            }else{//Opera, etc.
-		                $(this).mousedown(function(){return false;});
-		            }
-		        });
+            if($.browser.mozilla){//Firefox
+                $(this).css('MozUserSelect','none');
+            }else if($.browser.msie){//IE
+                $(this).bind('selectstart',function(){return false;});
+            }else{//Opera, etc.
+                $(this).mousedown(function(){return false;});
+            }
+        });
 	}
 
 	
@@ -672,7 +677,7 @@
 		if (typeof d == 'string')
 			return $.parseISO8601(d, true) || Date.parse(d) || new Date(parseInt(d));
 		if (typeof d == 'number')
-			return new Date(d * 1000);
+			return new Date(d);
 		return d;
 	}
 	
