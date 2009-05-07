@@ -1,9 +1,10 @@
 
-Current Release 
+2009-04-07 - 1.0-alpha-3 
 
 - Tightened up some of the rendering to cater to different configuration.
 - Added timeslotHeight config property so you can can specify the height of calendar time slots.
 - Fixed problem where resizing an event causes a new event to be created  
+- Fixed problem with click event  for calendar events firing twice.
 
 
 2009-04-06 - 1.0-alpha-2
