@@ -1,4 +1,11 @@
 
+Current Release 
+
+- Tightened up some of the rendering to cater to different configuration.
+- Added timeslotHeight config property so you can can specify the height of calendar time slots.
+- Fixed problem where resizing an event causes a new event to be created  
+
+
 2009-04-06 - 1.0-alpha-2
  - Removed jQuery UI Theme from source in favour of google hosted theme
  - Fixed bug with parsing dates in events supplied as milliseconds
