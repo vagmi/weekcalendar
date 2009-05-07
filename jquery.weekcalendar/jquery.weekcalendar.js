@@ -423,10 +423,6 @@
             addDraggableToCalEvent(calEvent, $calEvent, $weekDay, options);
         }
         
-        $calEvent.click(function(){
-            options.eventClick(calEvent, $calEvent);
-        });
-        
         return $calEvent;
         
     }
