@@ -32,7 +32,7 @@
 			});
 			return this;
 		}
-		
+		 
 		/*
 		*	Other options not in list below
 		* 	@height - function to calculate height of calendar - called on load and on window resize
@@ -44,6 +44,7 @@
 			startParam : "start",
 			endParam : "end",
 			newEventText : "New Event",
+            timeslotHeight: 20,
 			defaultEventLength : 2,
 			timeslotsPerHour : 4,
             buttons : true,
@@ -74,31 +75,31 @@
 			
 			function refreshWeek() {
 				clearCalendar($calendar);
-				loadCalendar($calendar, options, $calendar.data("startDate")); //reload with existing week
+				loadCalendar($calendar, $calendar.data("startDate")); //reload with existing week
 			}
 		
 			function today() {
 				clearCalendar($calendar);
-				loadCalendar($calendar, options, new Date()); 
+				loadCalendar($calendar, new Date()); 
 			}
 		
 			function prevWeek() {
                 //minus more than 1 day to be sure we're in previous week - account for daylight savings or other anomolies
 				var newDate = new Date($calendar.data("startDate").getTime() - (MILLIS_IN_WEEK / 6));
 				clearCalendar($calendar);	
-				loadCalendar($calendar, options, newDate);
+				loadCalendar($calendar, newDate);
 			}
 		
 			function nextWeek() {
                 //add 8 days to be sure of being in prev week - allows for daylight savings or other anomolies
 				var newDate = new Date($calendar.data("startDate").getTime() + MILLIS_IN_WEEK + (MILLIS_IN_WEEK / 7));
 				clearCalendar($calendar);
-				loadCalendar($calendar, options, newDate); 
+				loadCalendar($calendar, newDate); 
 			}
 		
 			function gotoWeek(date) {
 				clearCalendar($calendar);
-				loadCalendar($calendar, options, date);
+				loadCalendar($calendar, date);
 			}
 			
 			function removeEvent(eventId) {
@@ -113,10 +114,10 @@
 			}
 			
 			function updateEvent(calEvent) {
-				updateEventInCalendar(calEvent, options, $calendar);
+				updateEventInCalendar(calEvent, $calendar);
 			}
 			
-			$.data(this, 'weekCalendar', {
+			$(this).data('weekCalendar', {
 				today: today,
 				prevWeek: prevWeek,
 				nextWeek: nextWeek,
@@ -124,24 +125,27 @@
 				refresh: refreshWeek,
 				removeEvent: removeEvent,
 				updateEvent: updateEvent
-			});
+			}).data('options', options);
 	
-			renderCalendar($calendar, options);
-			loadCalendar($calendar, options);
-			resizeCalendar($calendar, options);
+			renderCalendar($calendar);
+			loadCalendar($calendar);
+			resizeCalendar($calendar);
 
 			options.calendarRendered($calendar);
 			
 			$(window).resize(function(){
-				resizeCalendar($calendar, options);
+				resizeCalendar($calendar);
 			});
+            
+            
 			
 			return $(this);
 		});
 	};
 	
 	
-	function resizeCalendar($calendar, options) {
+	function resizeCalendar($calendar) {
+        var options = $calendar.data("options");
 		if($.isFunction(options.height)) {
 			var calendarHeight = options.height($calendar);
 			var headerHeight = $calendar.find(".week-calendar-header").outerHeight();
@@ -153,7 +157,8 @@
 
 
 	
-	function renderCalendar($calendar, options) {
+	function renderCalendar($calendar) {
+        var options = $calendar.data("options");
 		var $calendarContainer = $("<div class=\"week-calendar\">").appendTo($calendar);
 		
         if(options.buttons) {
@@ -227,14 +232,14 @@
 		$(calendarHeaderHtml + calendarBodyHtml).appendTo($calendarContainer);
 		
 		var $weekDayColumns = $calendarContainer.find(".week-calendar-time-slots .day-column-inner");
-		var timeslotHeight = 20;
-        var columnHeight = (timeslotHeight * options.timeslotsPerDay);
+		//var timeslotHeight = 20;
+        var columnHeight = (options.timeslotHeight * options.timeslotsPerDay);
 		$weekDayColumns.each(function(i, val) {
 			$(this).height(columnHeight);	
 		});
-		$calendarContainer.find(".time-slot").height(timeslotHeight -1); //account for border
+		$calendarContainer.find(".time-slot").height(options.timeslotHeight -1); //account for border
         
-        var headerHeight = (timeslotHeight * options.timeslotsPerHour) - 11;
+        var headerHeight = (options.timeslotHeight * options.timeslotsPerHour) - 11;
         
         $calendarContainer.find(".time-header-cell").css({
                 height :  headerHeight,
@@ -245,8 +250,8 @@
         
 	}
 	
-	function loadCalendar($calendar, options, date) {
-		
+	function loadCalendar($calendar, date) {
+		var options = $calendar.data("options");
 		var date = date || options.date;
 		
 		var firstDayOfWeek = dateFirstDayOfWeek(date);
@@ -348,7 +353,8 @@
 		return $weekDay;
 	}
 	
-	function updateEventInCalendar(calEvent, options, $calendar) {
+	function updateEventInCalendar(calEvent, $calendar) {
+        var options = $calendar.data("options");
 		cleanEvent(calEvent);
 		var $calEvent;
 		$calendar.find(".cal-event").each(function(){
@@ -373,7 +379,7 @@
 			<div class=\"title\"><p></p></div></div>";
 		
 		var $calEvent = options.eventRender(calEvent, $(eventHtml)).appendTo($weekDay);
-
+        $calEvent.css({lineHeight: (options.timeslotHeight - 2) + "px", fontSize: (options.timeslotHeight / 2) + "px"})
 		refeshEventDetails(calEvent, $calEvent);
 		
 		//position the event
@@ -426,7 +432,7 @@
 	
 	function addDraggableSelectionToWeekDay($weekDay, options) {
 		
-		 var timeslotHeight = $weekDay.height() / options.timeslotsPerDay;
+		 //var timeslotHeight = $weekDay.height() / options.timeslotsPerDay;
 		
 		$weekDay.mousedown(function(event){
 			if($(this).data("mousedown.preventCreate")) {
@@ -438,21 +444,21 @@
 
 		    var columnOffset = $(this).offset().top;
 		    var clickVerticalPosition = event.pageY - columnOffset;
-		    var rounded = (clickVerticalPosition - (clickVerticalPosition % timeslotHeight)) / timeslotHeight;
-		    var topPosition = rounded * timeslotHeight;
+		    var rounded = (clickVerticalPosition - (clickVerticalPosition % options.timeslotHeight)) / options.timeslotHeight;
+		    var topPosition = rounded * options.timeslotHeight;
 		    $newEvent.css({top: topPosition});
 
 		    $(this).bind("mousemove.newevent", function(event){
 		    	$newEvent.show();
 		        $newEvent.data("dragged", true);
 		        var height = Math.round(event.pageY - columnOffset - topPosition);
-		       	var remainder = height % timeslotHeight;
+		       	var remainder = height % options.timeslotHeight;
 		        //snap to closest timeslot
 		       	if(remainder < (height / 2)) { 
 		        	var useHeight = height - remainder;
-		            $newEvent.css("height", useHeight < timeslotHeight ? timeslotHeight : useHeight);
+		            $newEvent.css("height", useHeight < options.timeslotHeight ? options.timeslotHeight : useHeight);
 		        } else {
-		            $newEvent.css("height", height + (timeslotHeight - remainder));
+		            $newEvent.css("height", height + (options.timeslotHeight - remainder));
 		        }
 		     }).mouseup(function(){
 		        $(this).unbind("mousemove.newevent");
@@ -466,7 +472,7 @@
 		     var $newEvent = $(this).find(".new-cal-event");
 			 //if even created from a single click only, default height
 		     if(!$newEvent.data("dragged")) {
-		     	$newEvent.css({height: timeslotHeight * options.defaultEventLength}).show();
+		     	$newEvent.css({height: options.timeslotHeight * options.defaultEventLength}).show();
 		     }
 
 		     if($newEvent.length) {
@@ -479,9 +485,9 @@
 	}
 	
 	function getEventDurationFromPositionedEventElement($weekDay, $calEvent, top, options) {
-		 var timeslotHeight = $weekDay.height() / options.timeslotsPerDay;
-		 var start = new Date($weekDay.data("startDate").getTime() + Math.round(top / timeslotHeight) * options.millisPerTimeslot);
-	     var end = new Date(start.getTime() + ($calEvent.height() / timeslotHeight) * options.millisPerTimeslot);
+		 //var timeslotHeight = $weekDay.height() / options.timeslotsPerDay;
+		 var start = new Date($weekDay.data("startDate").getTime() + Math.round(top / options.timeslotHeight) * options.millisPerTimeslot);
+	     var end = new Date(start.getTime() + ($calEvent.height() / options.timeslotHeight) * options.millisPerTimeslot);
 		 return {start: start, end: end};
 	}
 	
@@ -491,7 +497,7 @@
 			accept: ".cal-event",
 		    drop: function(event, ui) {
 		    	var $calEvent = ui.draggable;
-                var timeslotHeight = $weekDay.height() / options.timeslotsPerDay;
+                //var timeslotHeight = $weekDay.height() / options.timeslotsPerDay;
                 var top = Math.round(parseInt(ui.position.top));
                 var eventDuration = getEventDurationFromPositionedEventElement($weekDay, $calEvent, top, options);
                 var calEvent = $calEvent.data("calEvent");
@@ -517,27 +523,27 @@
 	}
 	
 	function addDraggableToCalEvent(calEvent, $calEvent, $weekDay, options) {
-		var timeslotHeight = $weekDay.height() / options.timeslotsPerDay;
+		//var timeslotHeight = $weekDay.height() / options.timeslotsPerDay;
 		$calEvent.draggable({
 	       	handle : ".time",
          	containment: ".calendar-scrollable-grid",
 	        opacity: 0.5,
-	        grid : [$calEvent.outerWidth() + 1, timeslotHeight ]
+	        grid : [$calEvent.outerWidth() + 1, options.timeslotHeight ]
        	});
 		
 	}
 	
 	function addResizableToCalEvent(calEvent, $calEvent, $weekDay, options) {
-		var timeslotHeight = $weekDay.height() / options.timeslotsPerDay;
+		//var timeslotHeight = $weekDay.height() / options.timeslotsPerDay;
 		$calEvent.resizable({
-	    	grid: timeslotHeight,
+	    	grid: options.timeslotHeight,
 	        containment : $weekDay,
 	        handles: "s",
-	        minHeight: timeslotHeight,
+	        minHeight: options.timeslotHeight,
 	        stop :function(event, ui){
 	        	var $calEvent = ui.element;  
 	
-	 			var newEnd = new Date($calEvent.data("calEvent").start.getTime() + ($calEvent.height() / timeslotHeight) * options.millisPerTimeslot);
+	 			var newEnd = new Date($calEvent.data("calEvent").start.getTime() + ($calEvent.height() / options.timeslotHeight) * options.millisPerTimeslot);
 				calEvent.end = newEnd;
 				refeshEventDetails(calEvent, $calEvent)
 	    		options.eventResize(calEvent, $calEvent);

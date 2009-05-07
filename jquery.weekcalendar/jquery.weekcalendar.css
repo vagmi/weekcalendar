@@ -153,7 +153,6 @@ table.week-calendar-time-slots {
 	position: absolute;	
 	text-align: center;
 	overflow: hidden;
-	font-size: 10px;
 	cursor: pointer;
 	color: #fff;
 	width: 100%;
@@ -161,12 +160,12 @@ table.week-calendar-time-slots {
 }
 
 .cal-event p {
-	margin: 0px 0px 5px 0px;	
+	margin: 0;
 }
 
 
 .new-cal-event div, .cal-event div {
-	padding: 5px;
+	padding: 0 5px;
 	
 }
 
@@ -174,8 +173,7 @@ table.week-calendar-time-slots {
 	background-color: #2b72d0;
 	border: 1px solid #1b62c0;
 	color: #fff;
-	font-size: 10px;
-	padding: 3px;
+	padding: 0;
 	font-weight: bold;
 	cursor: move;
 	margin: 1px;
