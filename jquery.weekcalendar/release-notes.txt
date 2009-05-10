@@ -1,4 +1,4 @@
-2009-04-10 - 1.0 - First Release
+2009-04-10 - 1.0-alpha-4
 - Fixed problem caused by window resize event binding hanging around after calendar is removed from the DOM.
 - Wasn't returning a reference to the original jquery plugin object so chaining wasn't possible
 - Added calendarPreLoad and calendarPostLoad events that are called before and after events get loaded into the calendar.
@@ -6,6 +6,8 @@
 - Fixed bug in calendar scrolling to hour of day.
 - Added scrollToHourMillis config option for setting the duration of the scroll to hour of day animation. 
 - Fixed problem where the newEvent event was triggered multiple times after navigating through weeks.
+- Fixed problem where dragging an event caused an event click to be triggered on drop instead of a dropped event.
+- Fixed issue in IE7 where width of calendar was not taking into account the width of the vertical scrollbar, causing a horizontal scrollbar to appear
 
 2009-04-07 - 1.0-alpha-3 
 

@@ -56,6 +56,8 @@
 
 .calendar-scrollable-grid {
 	overflow: auto;
+	overflow-x: hidden !important;
+	overflow-y: auto !important; 
 	position: relative;
 	background-color: #fff;
 	width: 100%;

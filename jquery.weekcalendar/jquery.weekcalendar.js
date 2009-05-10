@@ -1,5 +1,5 @@
 /*
- * jQuery.weekCalendar v1.0-alpha-3
+ * jQuery.weekCalendar v1.0-alpha-4
  * http://www.redredred.com.au/
  *
  * Requires:
@@ -531,9 +531,8 @@
                 options.eventDrop(newCalEvent, calEvent, $newEvent);
                             
 
-                $newEvent.data("preventClickEvent", true);
+                $calEvent.data("preventClickEvent", true);
                 setTimeout(function(){
-                    $newEvent.removeData("preventClickEvent");
                     $calEvent.remove(); // not sure why but delaying the remove fixes a bug in IE7
                 }, 500);
 
