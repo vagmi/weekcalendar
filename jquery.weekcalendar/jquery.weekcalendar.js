@@ -243,7 +243,9 @@
         //var timeslotHeight = 20;
         var columnHeight = (options.timeslotHeight * options.timeslotsPerDay);
         $weekDayColumns.each(function(i, val) {
-            $(this).height(columnHeight);   
+            $(this).height(columnHeight);  
+            addDroppableToWeekDay($(this), $weekDayColumns, options);
+            addDraggableSelectionToWeekDay($(this), options)
         });
         $calendarContainer.find(".time-slot").height(options.timeslotHeight -1); //account for border
         
@@ -295,9 +297,6 @@
             } else {
                 $(this).parent().removeClass("today");
             }
-            
-            addDroppableToWeekDay($(this), $weekDayColumns, options);
-            addDraggableSelectionToWeekDay($(this), options)
             
             currentDay = addDays(currentDay, 1);
             
@@ -455,7 +454,7 @@
                 return;
             }
 
-            var $newEvent = $("<div class=\"new-cal-event\"></div>");
+            var $newEvent = $("<div class=\"cal-event new-cal-event\"></div>");
             
             $newEvent.css({lineHeight: (options.timeslotHeight - 2) + "px", fontSize: (options.timeslotHeight / 2) + "px"});
             $(this).append($newEvent);
