@@ -1,3 +1,6 @@
+CURRENT
+- Added support for preventing overlapping calendar events
+
 2009-04-10 - 1.0-alpha-4
 - Fixed problem caused by window resize event binding hanging around after calendar is removed from the DOM.
 - Wasn't returning a reference to the original jquery plugin object so chaining wasn't possible
