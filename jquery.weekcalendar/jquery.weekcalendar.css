@@ -161,10 +161,6 @@ table.week-calendar-time-slots {
 	display: none;
 }
 
-.cal-event p {
-	margin: 0;
-}
-
 
 .cal-event div {
 	padding: 0 5px;
