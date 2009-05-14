@@ -1,3 +1,12 @@
+CURRENT - 1.1
+- Extended the events data structure to allow options to be passed back to the calendar with event data. This has 
+	resulted in a config option name change. The events option is now called 'data'. The data option can be either an array 
+	of calendar events or an object containing a property called 'events' which is the events data array. The data option 
+	can also contain an additional property called 'options'. Any options passed with the data will replace the current options 
+	in the calendar and force a re-render of the calendar. This is very useful in cases where the calendar layout needs to change for 
+	different data sets. For example, a calendar that is delegated but each owner has their own preference for timeslots per hour.
+- Fixed problem where errors were raised due to missing mouseover / mouseout events on calEvents.
+
 2009-04-12 - 1.0
 - Added support for preventing overlapping calendar events
 - Internal refactoring and cleanup including moving standard events to use delegation
