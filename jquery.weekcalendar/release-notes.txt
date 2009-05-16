@@ -1,4 +1,4 @@
-CURRENT - 1.1
+2009-04-16 - 1.1
 - Extended the events data structure to allow options to be passed back to the calendar with event data. This has 
 	resulted in a config option name change. The events option is now called 'data'. The data option can be either an array 
 	of calendar events or an object containing a property called 'events' which is the events data array. The data option 

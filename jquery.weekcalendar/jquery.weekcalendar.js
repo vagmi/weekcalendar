@@ -439,6 +439,7 @@
     
     
     function renderEvents(events, $weekDayColumns, $calendar) {
+        
         var options = $calendar.data("options");
         var eventsToRender;
         
@@ -453,9 +454,7 @@
             options.timeslotsPerDay = options.timeslotsPerHour * 24;
             options.millisPerTimeslot = MILLIS_IN_DAY / options.timeslotsPerDay;
             $calendar.empty();
-            
             $calendar.data("options", options);
-            setupEventDelegation($calendar);
             renderCalendar($calendar);
             $weekDayColumns = $calendar.find(".week-calendar-time-slots .day-column-inner");
             updateDayColumnHeader($calendar, $weekDayColumns);
@@ -480,6 +479,10 @@
     }
     
     function renderEvent(calEvent, $weekDay, options) {
+        
+        if(calEvent.start.getTime() > calEvent.end.getTime()) {
+            return; // can't render a negative height
+        }
         
         var eventClass, eventHtml, $calEvent, $modifiedEvent;
         
@@ -617,6 +620,7 @@
     
     
     function addDraggableToCalEvent(calEvent, $calEvent, options) {
+
         $calEvent.draggable({
             handle : ".time",
             containment: ".calendar-scrollable-grid",
