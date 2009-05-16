@@ -141,6 +141,7 @@
     
             setupEventDelegation($calendar);
             renderCalendar($calendar);
+            scrollToHour($calendar, new Date().getHours());
             loadCalEvents($calendar);
             resizeCalendar($calendar);
             
@@ -368,12 +369,12 @@
         options = $calendar.data("options");
         date = dateWithinWeek || options.date;
         weekStartDate = dateFirstDayOfWeek(date);
-        weekEndDate = dateLastDayOfWeek(date);
+        weekEndDate = dateLastMilliOfWeek(date);
         
         options.calendarBeforeLoad($calendar);
 
         $calendar.data("startDate", weekStartDate);
-        $calendar.data("endDate", dateLastMilliOfWeek(date));
+        $calendar.data("endDate", weekEndDate);
         
         $weekDayColumns = $calendar.find(".day-column-inner");
         
@@ -386,6 +387,7 @@
             jsonOptions[options.startParam || 'start'] = Math.round(weekStartDate.getTime() / 1000);
             jsonOptions[options.endParam || 'end'] = Math.round(weekEndDate.getTime() / 1000);
             $.getJSON(options.data, jsonOptions, function(data) {
+                console.log(data);
                 renderEvents(data, $weekDayColumns, $calendar);
                 if (options.loading) options.loading(false);
             });
@@ -401,7 +403,7 @@
         }
         
         disableTextSelect($weekDayColumns);
-        scrollToHour($calendar, new Date().getHours());
+       
         
     }
     
