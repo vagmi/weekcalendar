@@ -1,5 +1,5 @@
 /*
- * jQuery.weekCalendar v1.0
+ * jQuery.weekCalendar v1.1.1
  * http://www.redredred.com.au/
  *
  * Requires:
@@ -441,7 +441,6 @@
     
     
     function renderEvents(events, $weekDayColumns, $calendar) {
-        
         var options = $calendar.data("options");
         var eventsToRender;
         
@@ -451,22 +450,36 @@
              eventsToRender = cleanEvents(events.events);
         }
         if(events.options) {
-
+            
+            var updateLayout = false;
+            //check if any options have actually changed
+            $.each(events.options, function(key, value){
+                if(value !== options[key]) {
+                    updateLayout = true;
+                    return false;
+                }
+            });
+            
             options = $.extend(options, events.options);
             options.timeslotsPerDay = options.timeslotsPerHour * 24;
             options.millisPerTimeslot = MILLIS_IN_DAY / options.timeslotsPerDay;
-            $calendar.empty();
+            
+            if(updateLayout) {
+                $calendar.empty();
+                renderCalendar($calendar);
+                $weekDayColumns = $calendar.find(".week-calendar-time-slots .day-column-inner");
+                updateDayColumnHeader($calendar, $weekDayColumns);
+                resizeCalendar($calendar);
+            }
+            
             $calendar.data("options", options);
-            renderCalendar($calendar);
-            $weekDayColumns = $calendar.find(".week-calendar-time-slots .day-column-inner");
-            updateDayColumnHeader($calendar, $weekDayColumns);
-            resizeCalendar($calendar);
-            
-            
         }
         
+         
         $.each(eventsToRender, function(i, calEvent){
+            
             var $weekDay = findWeekDayForEvent(calEvent, $weekDayColumns);
+            
             if($weekDay) {
                 renderEvent(calEvent, $weekDay, options);
             }

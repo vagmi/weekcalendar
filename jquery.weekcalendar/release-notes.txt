@@ -1,6 +1,7 @@
-CURRENT - 1.1.1
+2009-04-17- 1.1.1
 - Fixed problem with calculation of end date passed to data functions / url
 - Updating scrolling to hour to only occur on first render
+- Added code to check for changed options after loading data before actually re-rendering the calendar.
 
 
 2009-04-16 - 1.1
