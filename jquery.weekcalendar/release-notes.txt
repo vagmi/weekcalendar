@@ -1,10 +1,13 @@
-2009-04-17- 1.1.1
+2009-05-21 - 1.1.2
+- Fixed problem in safari and chrome where new events where not being created due to lack of event bubbling of mousedown and mouseup events.
+
+2009-05-17- 1.1.1
 - Fixed problem with calculation of end date passed to data functions / url
 - Updating scrolling to hour to only occur on first render
 - Added code to check for changed options after loading data before actually re-rendering the calendar.
 
 
-2009-04-16 - 1.1
+2009-05-16 - 1.1
 - Extended the events data structure to allow options to be passed back to the calendar with event data. This has 
 	resulted in a config option name change. The events option is now called 'data'. The data option can be either an array 
 	of calendar events or an object containing a property called 'events' which is the events data array. The data option 
@@ -13,11 +16,11 @@
 	different data sets. For example, a calendar that is delegated but each owner has their own preference for timeslots per hour.
 - Fixed problem where errors were raised due to missing mouseover / mouseout events on calEvents.
 
-2009-04-12 - 1.0
+2009-05-12 - 1.0
 - Added support for preventing overlapping calendar events
 - Internal refactoring and cleanup including moving standard events to use delegation
 
-2009-04-10 - 1.0-alpha-4
+2009-05-10 - 1.0-alpha-4
 - Fixed problem caused by window resize event binding hanging around after calendar is removed from the DOM.
 - Wasn't returning a reference to the original jquery plugin object so chaining wasn't possible
 - Added calendarPreLoad and calendarPostLoad events that are called before and after events get loaded into the calendar.
@@ -28,7 +31,7 @@
 - Fixed problem where dragging an event caused an event click to be triggered on drop instead of a dropped event.
 - Fixed issue in IE7 where width of calendar was not taking into account the width of the vertical scrollbar, causing a horizontal scrollbar to appear
 
-2009-04-07 - 1.0-alpha-3 
+2009-05-07 - 1.0-alpha-3 
 
 - Tightened up some of the rendering to cater to different configuration.
 - Added timeslotHeight config property so you can can specify the height of calendar time slots.
@@ -36,12 +39,12 @@
 - Fixed problem with click event  for calendar events firing twice.
 
 
-2009-04-06 - 1.0-alpha-2
+2009-05-06 - 1.0-alpha-2
  - Removed jQuery UI Theme from source in favour of google hosted theme
  - Fixed bug with parsing dates in events supplied as milliseconds
  - Added minified and yui compressed versions of javascript
  - Fixed bug where current day remained highlighted after navigating to next / prev weeks
 
 
-2009-04-05 - 1.0-alpha-1
+2009-05-05 - 1.0-alpha-1
  - Initial Release

@@ -1,5 +1,5 @@
 /*
- * jQuery.weekCalendar v1.1.1
+ * jQuery.weekCalendar v1.1.2
  * http://www.redredred.com.au/
  *
  * Requires:
@@ -170,66 +170,7 @@
     // Setup event delgation for standard click & mouseover events for calEvents and columns
     function setupEventDelegation($calendar) {
         
-        $calendar.mousedown(function(event) {
-            var options = $calendar.data("options");
-            var $target = $(event.target);
-            
-            if($target.hasClass("day-column-inner")) {
-                var $newEvent = $("<div class=\"cal-event new-cal-event new-cal-event-creating\"></div>");
-            
-                $newEvent.css({lineHeight: (options.timeslotHeight - 2) + "px", fontSize: (options.timeslotHeight / 2) + "px"});
-                $target.append($newEvent);
-    
-                var columnOffset = $target.offset().top;
-                var clickY = event.pageY - columnOffset;
-                var clickYRounded = (clickY - (clickY % options.timeslotHeight)) / options.timeslotHeight;
-                var topPosition = clickYRounded * options.timeslotHeight;
-                $newEvent.css({top: topPosition});
-
-                $target.bind("mousemove.newevent", function(event){
-                    $newEvent.show();
-                    $newEvent.addClass("ui-resizable-resizing");
-                    var height = Math.round(event.pageY - columnOffset - topPosition);
-                    var remainder = height % options.timeslotHeight;
-                    //snap to closest timeslot
-                    if(remainder < (height / 2)) { 
-                        var useHeight = height - remainder;
-                        $newEvent.css("height", useHeight < options.timeslotHeight ? options.timeslotHeight : useHeight);
-                    } else {
-                        $newEvent.css("height", height + (options.timeslotHeight - remainder));
-                    }
-                 }).mouseup(function(){
-                    $target.unbind("mousemove.newevent");
-                    $newEvent.addClass("ui-corner-all");
-                 });
-            }
-        
-        }).mouseup(function(event) {
-            var options = $calendar.data("options");
-            var $target = $(event.target);
-            
-            if($target.hasClass("day-column-inner") || $target.hasClass(".new-cal-event-creating")) {
-                
-                var $weekDay = $target.hasClass(".new-cal-event-creating") ? $target.closest(".day-column-inner") : $target;
-                
-                var $newEvent = $weekDay.find(".new-cal-event-creating");
-                 //if even created from a single click only, default height
-                 if(!$newEvent.hasClass("ui-resizable-resizing")) {
-                    $newEvent.css({height: options.timeslotHeight * options.defaultEventLength}).show();
-                 }
-    
-                 if($newEvent.length) {
-                    var top = parseInt($newEvent.css("top"));
-                    var eventDuration = getEventDurationFromPositionedEventElement($weekDay, $newEvent, top, options);
-                    $newEvent.remove();
-                    var newCalEvent = {start: eventDuration.start, end: eventDuration.end, title: options.newEventText};
-                    var $renderedCalEvent = renderEvent(newCalEvent, $weekDay, options);
-                    
-                    options.eventNew(eventDuration, $renderedCalEvent);
-                 }
-            }
-            
-        }).click(function(event) {
+        $calendar.click(function(event) {
             var options = $calendar.data("options");
             var $target = $(event.target);
             if($target.data("preventClick")) {
@@ -349,6 +290,7 @@
         $weekDayColumns.each(function(i, val) {
             $(this).height(options.timeslotHeight * options.timeslotsPerDay);  
             addDroppableToWeekDay($calendar, $(this), options);
+            setupEventCreationForWeekDay($calendar, $(this));
         });
         
         $calendarContainer.find(".time-slot").height(options.timeslotHeight -1); //account for border
@@ -361,6 +303,69 @@
         
         
     }
+    
+    function setupEventCreationForWeekDay($calendar, $weekDay) {
+        $weekDay.mousedown(function(event) {
+            var options = $calendar.data("options");
+            var $target = $(event.target);
+            
+            if($target.hasClass("day-column-inner")) {
+                
+                var $newEvent = $("<div class=\"cal-event new-cal-event new-cal-event-creating\"></div>");
+            
+                $newEvent.css({lineHeight: (options.timeslotHeight - 2) + "px", fontSize: (options.timeslotHeight / 2) + "px"});
+                $target.append($newEvent);
+    
+                var columnOffset = $target.offset().top;
+                var clickY = event.pageY - columnOffset;
+                var clickYRounded = (clickY - (clickY % options.timeslotHeight)) / options.timeslotHeight;
+                var topPosition = clickYRounded * options.timeslotHeight;
+                $newEvent.css({top: topPosition});
+
+                $target.bind("mousemove.newevent", function(event){
+                    $newEvent.show();
+                    $newEvent.addClass("ui-resizable-resizing");
+                    var height = Math.round(event.pageY - columnOffset - topPosition);
+                    var remainder = height % options.timeslotHeight;
+                    //snap to closest timeslot
+                    if(remainder < (height / 2)) { 
+                        var useHeight = height - remainder;
+                        $newEvent.css("height", useHeight < options.timeslotHeight ? options.timeslotHeight : useHeight);
+                    } else {
+                        $newEvent.css("height", height + (options.timeslotHeight - remainder));
+                    }
+                 }).mouseup(function(){
+                    $target.unbind("mousemove.newevent");
+                    $newEvent.addClass("ui-corner-all");
+                 });
+            }
+        
+        }).mouseup(function(event) {
+            var options = $calendar.data("options");
+            var $target = $(event.target);
+            if($target.hasClass("day-column-inner") || $target.hasClass(".new-cal-event-creating")) {
+                
+                var $weekDay = $target.hasClass(".new-cal-event-creating") ? $target.closest(".day-column-inner") : $target;
+                
+                var $newEvent = $weekDay.find(".new-cal-event-creating");
+                 //if even created from a single click only, default height
+                 if(!$newEvent.hasClass("ui-resizable-resizing")) {
+                    $newEvent.css({height: options.timeslotHeight * options.defaultEventLength}).show();
+                 }
+    
+                 if($newEvent.length) {
+                    var top = parseInt($newEvent.css("top"));
+                    var eventDuration = getEventDurationFromPositionedEventElement($weekDay, $newEvent, top, options);
+                    $newEvent.remove();
+                    var newCalEvent = {start: eventDuration.start, end: eventDuration.end, title: options.newEventText};
+                    var $renderedCalEvent = renderEvent(newCalEvent, $weekDay, options);
+                    
+                    options.eventNew(eventDuration, $renderedCalEvent);
+                 }
+            }
+        });
+    }
+    
     
     function loadCalEvents($calendar, dateWithinWeek) {
         
@@ -387,7 +392,6 @@
             jsonOptions[options.startParam || 'start'] = Math.round(weekStartDate.getTime() / 1000);
             jsonOptions[options.endParam || 'end'] = Math.round(weekEndDate.getTime() / 1000);
             $.getJSON(options.data, jsonOptions, function(data) {
-                console.log(data);
                 renderEvents(data, $weekDayColumns, $calendar);
                 if (options.loading) options.loading(false);
             });
