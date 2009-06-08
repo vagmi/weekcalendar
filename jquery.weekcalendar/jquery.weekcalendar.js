@@ -230,14 +230,17 @@
             
             $calendarContainer.find(".calendar-nav .today").click(function(){
                 $calendar.weekCalendar("today");
+                return false;
             });
             
             $calendarContainer.find(".calendar-nav .prev").click(function(){
                 $calendar.weekCalendar("prevWeek");
+                return false;
             });
             
             $calendarContainer.find(".calendar-nav .next").click(function(){
                 $calendar.weekCalendar("nextWeek");
+                return false;
             });
             
         }
