@@ -1,3 +1,9 @@
+2009-06-08 - 1.2 (CURRENT DEV RELEASE)
+- Added better layout support for overlapping of events
+- Added ability to supply formatters for date and time
+- Added improved demo with creation / editing of events using jquery ui.
+
+
 2009-06-08 - 1.1.3
 - Removed console.log that was causing issues in IE.
 - Fixed an issue with nav buttons in certain environments

@@ -1,5 +1,5 @@
 /*
- * jQuery.weekCalendar v1.1.2
+ * jQuery.weekCalendar v1.2.0
  * http://www.redredred.com.au/
  *
  * Requires:
@@ -12,15 +12,16 @@
  *   http://www.opensource.org/licenses/mit-license.php
  *   http://www.gnu.org/licenses/gpl.html
  *   
- *   Special thanks to Adam Shaw who's fullcalendar plugin (http://arshaw.com/fullcalendar/)
- *   inspired the creation of this plugin. 
+ *   If you're after a monthly calendar plugin, checkout http://arshaw.com/fullcalendar/
  */
 (function($) {
     
-    var dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     var MILLIS_IN_DAY = 86400000;
     var MILLIS_IN_WEEK = MILLIS_IN_DAY * 7;
+    var shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var longMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var shortDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    var longDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
     $.fn.weekCalendar = function(options) {
         
@@ -39,9 +40,12 @@
         
         options = $.extend({
             date: new Date(),
+            timeFormat : "h:i a",
+            dateFormat : "M d, Y",
+            shortDayNames: false,
+            fromToTimeSeparator : " to ",
             startParam : "start",
             endParam : "end",
-            
             businessHours : {start: 8, end: 18},
             newEventText : "New Event",
             timeslotHeight: 20,
@@ -346,26 +350,30 @@
         }).mouseup(function(event) {
             var options = $calendar.data("options");
             var $target = $(event.target);
-            if($target.hasClass("day-column-inner") || $target.hasClass(".new-cal-event-creating")) {
+           
+            //if($target.hasClass("day-column-inner") || $target.hasClass(".new-cal-event-creating")) {
                 
-                var $weekDay = $target.hasClass(".new-cal-event-creating") ? $target.closest(".day-column-inner") : $target;
+                //var $weekDay = $target.hasClass(".new-cal-event-creating") ? $target.closest(".day-column-inner") : $target;
+                
+                var $weekDay = $target.closest(".day-column-inner");
                 
                 var $newEvent = $weekDay.find(".new-cal-event-creating");
-                 //if even created from a single click only, default height
-                 if(!$newEvent.hasClass("ui-resizable-resizing")) {
-                    $newEvent.css({height: options.timeslotHeight * options.defaultEventLength}).show();
-                 }
     
                  if($newEvent.length) {
+                     //if even created from a single click only, default height
+                    if(!$newEvent.hasClass("ui-resizable-resizing")) {
+                        $newEvent.css({height: options.timeslotHeight * options.defaultEventLength}).show();
+                    }
                     var top = parseInt($newEvent.css("top"));
                     var eventDuration = getEventDurationFromPositionedEventElement($weekDay, $newEvent, top, options);
                     $newEvent.remove();
                     var newCalEvent = {start: eventDuration.start, end: eventDuration.end, title: options.newEventText};
                     var $renderedCalEvent = renderEvent(newCalEvent, $weekDay, options);
-                    
+                    adjustOverlappingEvents($weekDay, options); 
+        
                     options.eventNew(eventDuration, $renderedCalEvent);
                  }
-            }
+            //}
         });
     }
     
@@ -386,7 +394,7 @@
         
         $weekDayColumns = $calendar.find(".day-column-inner");
         
-        updateDayColumnHeader($calendar, $weekDayColumns);
+        updateDayColumnHeader($calendar, $weekDayColumns, options);
         
         //load events by chosen means        
         if (typeof options.data == 'string') {
@@ -414,12 +422,15 @@
         
     }
     
-    function updateDayColumnHeader($calendar, $weekDayColumns) {
+    function updateDayColumnHeader($calendar, $weekDayColumns, options) {
         
         var currentDay = cloneDate($calendar.data("startDate"));
 
         $calendar.find(".week-calendar-header td.day-column-header").each(function(i, val) {
-                $(this).html(dayNames[i] + "<br/>" + monthNames[currentDay.getMonth()] + ", " + currentDay.getDate() + ", " + currentDay.getFullYear());
+            
+                var dayName = options.shortDayNames ? shortDays[i] : longDays[i];
+            
+                $(this).html(dayName + "<br/>" + formatDate(currentDay, options.dateFormat));
                 if(isToday(currentDay)) {
                     $(this).addClass("today");
                 } else {
@@ -475,7 +486,7 @@
                 $calendar.empty();
                 renderCalendar($calendar);
                 $weekDayColumns = $calendar.find(".week-calendar-time-slots .day-column-inner");
-                updateDayColumnHeader($calendar, $weekDayColumns);
+                updateDayColumnHeader($calendar, $weekDayColumns, options);
                 resizeCalendar($calendar);
             }
             
@@ -490,7 +501,11 @@
             if($weekDay) {
                 renderEvent(calEvent, $weekDay, options);
             }
-        }); 
+        });
+        
+        $weekDayColumns.each(function(){
+            adjustOverlappingEvents($(this), options);
+        });
         
         options.calendarAfterLoad($calendar);
         
@@ -518,8 +533,8 @@
         $calEvent = $modifiedEvent ? $modifiedEvent.appendTo($weekDay) : $calEvent.appendTo($weekDay);
         $calEvent.css({lineHeight: (options.timeslotHeight - 2) + "px", fontSize: (options.timeslotHeight / 2) + "px"});
         
-        positionEvent($weekDay, $calEvent, calEvent);
-        refeshEventDetails(calEvent, $calEvent);
+        refreshEventDetails(calEvent, $calEvent, options);
+        positionEvent($weekDay, $calEvent);
         $calEvent.show();
         
         if(options.resizable(calEvent, $calEvent)) {
@@ -532,6 +547,79 @@
         return $calEvent;
         
     }
+    
+    function adjustOverlappingEvents($weekDay, options) {
+        if(options.allowCalEventOverlap) {
+            groupOverlappingEventElements($weekDay);
+        }
+    }
+    
+    
+    function groupOverlappingEventElements($weekDay) {
+        
+        var $events = $weekDay.find(".cal-event");
+        var sortedEvents = $events.sort(function(a, b){
+            return $(a).data("calEvent").start.getTime() - $(b).data("calEvent").start.getTime();
+        });
+        
+        var $lastEvent;
+        var groups = [];
+        var currentGroup = [];
+        $.each(sortedEvents, function(){
+            $(this).css({width: "100%", left: "", right: ""});
+            if($lastEvent && $lastEvent.data("calEvent").end.getTime() > $(this).data("calEvent").start.getTime()) {
+                if(!currentGroup.length) {
+                   currentGroup.push($lastEvent);
+                }
+                currentGroup.push($(this));
+            } else if(currentGroup.length) {
+                    groups.push(currentGroup);
+                    currentGroup = [];
+            } 
+            
+            $lastEvent = $(this);
+        });
+        
+        if(currentGroup.length) {
+            groups.push(currentGroup);
+        }
+        
+        $.each(groups, function(){
+            $.each(this, function(i){
+                if(i % 2 === 0) {
+                    $(this).css({width: "70%", left: 0, right: ""});
+                } else {
+                    $(this).css({width: "70%", left: "", right: 0});
+                }
+            });
+        })
+        
+    }
+    
+     function eventsOverlap(thisEvent, thatEvent) {
+        
+        //overlapping end time
+        if(thisEvent.start.getTime() < currentCalEvent.end.getTime() 
+                && thisEvent.end.getTime() >= thatEvent.end.getTime()) {
+              
+          return true;
+        }
+            
+        //overlapping the start time
+        if(thisEvent.end.getTime() > thatEvent.start.getTime() 
+            && thisEvent.start.getTime() <= thatEvent.start.getTime()) {
+          
+          return true;
+        }
+        //has been dropped inside existing event with same or larger duration
+        if(thisEvent.end.getTime() <= thatEvent.end.getTime() 
+            && thisEvent.start.getTime() >= thatEvent.start.getTime()) {
+               
+           return true;
+        }
+        
+     }
+    
     
     function findWeekDayForEvent(calEvent, $weekDayColumns) {
     
@@ -563,6 +651,7 @@
         var $weekDay = findWeekDayForEvent(calEvent, $calendar.find(".week-calendar-time-slots .day-column-inner"));
         if($weekDay) {
             renderEvent(calEvent, $weekDay, options);
+            adjustOverlappingEvents($weekDay, options);
         }
     }
     
@@ -570,7 +659,9 @@
     
     
     
-    function positionEvent($weekDay, $calEvent, calEvent) {
+    function positionEvent($weekDay, $calEvent) {
+        
+        var calEvent = $calEvent.data("calEvent");
         var pxPerMillis = $weekDay.height() / MILLIS_IN_DAY;
         var startMillis = calEvent.start.getTime() - new Date(calEvent.start.getFullYear(), calEvent.start.getMonth(), calEvent.start.getDate()).getTime();
         var eventMillis = calEvent.end.getTime() - calEvent.start.getTime();    
@@ -670,7 +761,8 @@
                 options.eventDrop(newCalEvent, calEvent, $newEvent);
                 $calEvent.data("preventClick", true);
                 setTimeout(function(){
-                    $calEvent.remove(); 
+                    $calEvent.remove();
+                    adjustOverlappingEvents($weekDay, options);
                 }, 500);
                                 
             }
@@ -688,8 +780,9 @@
                 var newEnd = new Date($calEvent.data("calEvent").start.getTime() + ($calEvent.height() / options.timeslotHeight) * options.millisPerTimeslot);
                 var newCalEvent = $.extend(true, {start: calEvent.start, end: newEnd}, calEvent);
                 adjustForEventCollisions($weekDay, $calEvent, newCalEvent, calEvent, options);
-                positionEvent($weekDay, $calEvent, newCalEvent);
-                refeshEventDetails(newCalEvent, $calEvent);
+                
+                refreshEventDetails(newCalEvent, $calEvent, options);
+                positionEvent($weekDay, $calEvent);
                 
                 //trigger resize callback
                 options.eventResize(newCalEvent, calEvent, $calEvent);
@@ -702,8 +795,10 @@
     }
     
     
-    function refeshEventDetails(calEvent, $calEvent) {
-        $calEvent.find(".time").text(formatAsTime(calEvent.start) + " to " +  formatAsTime(calEvent.end));
+    function refreshEventDetails(calEvent, $calEvent, options) {
+        
+        $calEvent.find(".time").text(formatDate(calEvent.start, options.timeFormat) + options.fromToTimeSeparator + formatDate(calEvent.end, options.timeFormat));
+        
         $calEvent.find(".title").text(calEvent.title);
         $calEvent.data("calEvent", calEvent);
     }
@@ -723,10 +818,10 @@
             $scrollable.animate({scrollTop: scroll}, options.scrollToHourMillis);
         });
     }
-    
+    /*
     function formatAsTime(date) {
         return zeroPad(hourForIndex(date.getHours()), 2) + ":" + zeroPad(date.getMinutes(), 2) + " " + amOrPm(date.getHours());
-    }
+    }*/
 
     function hourForIndex(index) {
         if(index === 0 ) { //midnight
@@ -798,7 +893,7 @@
         return new Date(lastDayOfWeek.getTime() + (MILLIS_IN_DAY - 1));
         
     }
-    
+    /*
     function zeroPad(number, size) {
         var length = ("" + number).length;
         var strNumber = "" + number;
@@ -806,7 +901,7 @@
             strNumber = "0" + strNumber;
         }
         return strNumber;
-    }
+    }*/
     
     function clearTime(d) {
         d.setHours(0); 
@@ -830,13 +925,13 @@
     
     function cleanDate(d) {
         if (typeof d == 'string')
-            return $.parseISO8601(d, true) || Date.parse(d) || new Date(parseInt(d));
+            return parseISO8601(d, true) || Date.parse(d) || new Date(parseInt(d));
         if (typeof d == 'number')
             return new Date(d);
         return d;
     }
     
-    $.parseISO8601 = function(s, ignoreTimezone) {
+    function parseISO8601(s, ignoreTimezone) {
         // derived from http://delete.me.uk/2005/03/iso8601.html
         var regexp = "([0-9]{4})(-([0-9]{2})(-([0-9]{2})" +
             "(T([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]+))?)?" +
@@ -860,7 +955,76 @@
         }
         return new Date(Number(date) + (offset * 60 * 1000));
     };
+    
+    
+    /*
+     * date formatting is adapted from 
+     * http://jacwright.com/projects/javascript/date_format
+     */
+    function formatDate(date, format) {
+        var returnStr = '';
+        for (var i = 0; i < format.length; i++) {
+            var curChar = format.charAt(i);
+            if ($.isFunction(replaceChars[curChar])) {
+                returnStr += replaceChars[curChar](date);
+            } else {
+                returnStr += curChar;
+            }
+        }
+        return returnStr;
+    }
+    
+	var replaceChars = {
+	    
+	    
+	    // Day
+	    d: function(date) { return (date.getDate() < 10 ? '0' : '') + date.getDate(); },
+	    D: function(date) { return shortDays[date.getDay()]; },
+	    j: function(date) { return date.getDate(); },
+	    l: function(date) { return longDays[date.getDay()]; },
+	    N: function(date) { return date.getDay() + 1; },
+	    S: function(date) { return (date.getDate() % 10 == 1 && date.getDate() != 11 ? 'st' : (date.getDate() % 10 == 2 && date.getDate() != 12 ? 'nd' : (date.getDate() % 10 == 3 && date.getDate() != 13 ? 'rd' : 'th'))); },
+	    w: function(date) { return date.getDay(); },
+	    z: function(date) { return "Not Yet Supported"; },
+	    // Week
+	    W: function(date) { return "Not Yet Supported"; },
+	    // Month
+	    F: function(date) { return longMonths[date.getMonth()]; },
+	    m: function(date) { return (date.getMonth() < 11 ? '0' : '') + (date.getMonth() + 1); },
+	    M: function(date) { return shortMonths[date.getMonth()]; },
+	    n: function(date) { return date.getMonth() + 1; },
+	    t: function(date) { return "Not Yet Supported"; },
+	    // Year
+	    L: function(date) { return "Not Yet Supported"; },
+	    o: function(date) { return "Not Supported"; },
+	    Y: function(date) { return date.getFullYear(); },
+	    y: function(date) { return ('' + date.getFullYear()).substr(2); },
+	    // Time
+	    a: function(date) { return date.getHours() < 12 ? 'am' : 'pm'; },
+	    A: function(date) { return date.getHours() < 12 ? 'AM' : 'PM'; },
+	    B: function(date) { return "Not Yet Supported"; },
+	    g: function(date) { return date.getHours() % 12 || 12; },
+	    G: function(date) { return date.getHours(); },
+	    h: function(date) { return ((date.getHours() % 12 || 12) < 10 ? '0' : '') + (date.getHours() % 12 || 12); },
+	    H: function(date) { return (date.getHours() < 10 ? '0' : '') + date.getHours(); },
+	    i: function(date) { return (date.getMinutes() < 10 ? '0' : '') + date.getMinutes(); },
+	    s: function(date) { return (date.getSeconds() < 10 ? '0' : '') + date.getSeconds(); },
+	    // Timezone
+	    e: function(date) { return "Not Yet Supported"; },
+	    I: function(date) { return "Not Supported"; },
+	    O: function(date) { return (date.getTimezoneOffset() < 0 ? '-' : '+') + (date.getTimezoneOffset() / 60 < 10 ? '0' : '') + (date.getTimezoneOffset() / 60) + '00'; },
+	    T: function(date) { return "Not Yet Supported"; },
+	    Z: function(date) { return date.getTimezoneOffset() * 60; },
+	    // Full Date/Time
+	    c: function(date) { return "Not Yet Supported"; },
+	    r: function(date) { return date.toString(); },
+	    U: function(date) { return date.getTime() / 1000; }
+	};
+    
+    
+    
 
+    /*
     $.ISO8601String = function(date) {
         // derived from http://delete.me.uk/2005/03/iso8601.html
         var zeropad = function (num) { return ((num < 10) ? '0' : '') + num; }
@@ -872,7 +1036,7 @@
             ":" + zeropad(date.getUTCSeconds()) +
             "Z";
     };
-    
+    */
     
 
 })(jQuery);
