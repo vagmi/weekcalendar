@@ -2,6 +2,7 @@
 - Added better layout support for overlapping of events
 - Added ability to supply formatters for date and time
 - Added improved demo with creation / editing of events using jquery ui.
+- Added option to only display hours defined in the 'businessHours' config option.
 
 
 2009-06-08 - 1.1.3

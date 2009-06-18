@@ -7,6 +7,7 @@ $(document).ready(function() {
 	$('#calendar').weekCalendar({
 		timeslotsPerHour : 4,
 		allowCalEventOverlap : true,
+        onlyDisplayBusinessHours : true,
 		height : function($calendar) {
 			return $(window).height() - $("h1").outerHeight();
 		},

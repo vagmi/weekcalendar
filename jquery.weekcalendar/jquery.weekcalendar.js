@@ -47,6 +47,7 @@
             startParam : "start",
             endParam : "end",
             businessHours : {start: 8, end: 18},
+            onlyDisplayBusinessHours : false,
             newEventText : "New Event",
             timeslotHeight: 20,
             defaultEventLength : 2,
@@ -74,10 +75,8 @@
             noEvents : function() {}
             
         }, options);
-        
-        options.timeslotsPerDay = options.timeslotsPerHour * 24;
-        options.millisPerTimeslot = MILLIS_IN_DAY / options.timeslotsPerDay;
 
+        
         return this.each(function() {
         
             var $calendar = $(this);
@@ -221,6 +220,18 @@
         
         
         options = $calendar.data("options");
+        
+        if(options.onlyDisplayBusinessHours) {
+            options.timeslotsPerDay = options.timeslotsPerHour * (options.businessHours.end - options.businessHours.start);
+            options.millisToDisplay = (options.businessHours.end - options.businessHours.start) * 60 * 60 * 1000;
+            options.millisPerTimeslot = options.millisToDisplay / options.timeslotsPerDay;
+        } else {
+            options.timeslotsPerDay = options.timeslotsPerHour * 24;
+            options.millisToDisplay = MILLIS_IN_DAY;
+            options.millisPerTimeslot = MILLIS_IN_DAY / options.timeslotsPerDay;
+        }
+            
+        
         $calendarContainer = $("<div class=\"week-calendar\">").appendTo($calendar);
         
         if(options.buttons) {
@@ -265,8 +276,11 @@
             <td colspan=\"7\">\
             <div class=\"time-slot-wrapper\">\
             <div class=\"time-slots\">";
+        
+        var start = options.onlyDisplayBusinessHours ? options.businessHours.start : 0;
+        var end = options.onlyDisplayBusinessHours ? options.businessHours.end : 24;    
             
-        for(var i=0 ; i<24; i++) {
+        for(var i = start ; i < end; i++) {
             for(var j=0;j<options.timeslotsPerHour - 1; j++) {
                 calendarBodyHtml += "<div class=\"time-slot\"></div>";
             }   
@@ -275,7 +289,7 @@
         
         calendarBodyHtml += "</div></div></td></tr><tr><td class=\"grid-timeslot-header\">";
     
-        for(var i=0 ; i<24; i++) {
+        for(var i = start ; i < end; i++) {
 
             var bhClass = (options.businessHours.start <= i && options.businessHours.end > i) ? "business-hours" : "";                 
             calendarBodyHtml += "<div class=\"hour-header " + bhClass + "\">\
@@ -479,8 +493,16 @@
             });
             
             options = $.extend(options, events.options);
-            options.timeslotsPerDay = options.timeslotsPerHour * 24;
-            options.millisPerTimeslot = MILLIS_IN_DAY / options.timeslotsPerDay;
+            
+            if(options.onlyDisplayBusinessHours) {
+	            options.timeslotsPerDay = options.timeslotsPerHour * (options.businessHours.end - options.businessHours.start);
+	            options.millisToDisplay = (options.businessHours.end - options.businessHours.start) * 60 * 60 * 1000;
+	            options.millisPerTimeslot = options.millisToDisplay / options.timeslotsPerDay;
+	        } else {
+	            options.timeslotsPerDay = options.timeslotsPerHour * 24;
+                options.millisToDisplay = MILLIS_IN_DAY;
+	            options.millisPerTimeslot = MILLIS_IN_DAY / options.timeslotsPerDay;
+	        }
             
             if(updateLayout) {
                 $calendar.empty();
@@ -534,7 +556,7 @@
         $calEvent.css({lineHeight: (options.timeslotHeight - 2) + "px", fontSize: (options.timeslotHeight / 2) + "px"});
         
         refreshEventDetails(calEvent, $calEvent, options);
-        positionEvent($weekDay, $calEvent);
+        positionEvent($weekDay, $calEvent, options);
         $calEvent.show();
         
         if(options.resizable(calEvent, $calEvent)) {
@@ -630,7 +652,6 @@
                 return false;
             } 
         }); 
-        
         return $weekDay;
     }
     
@@ -659,11 +680,12 @@
     
     
     
-    function positionEvent($weekDay, $calEvent) {
+    function positionEvent($weekDay, $calEvent, options) {
         
         var calEvent = $calEvent.data("calEvent");
-        var pxPerMillis = $weekDay.height() / MILLIS_IN_DAY;
-        var startMillis = calEvent.start.getTime() - new Date(calEvent.start.getFullYear(), calEvent.start.getMonth(), calEvent.start.getDate()).getTime();
+        var pxPerMillis = $weekDay.height() / options.millisToDisplay;
+        var firstHourDisplayed = options.onlyDisplayBusinessHours ? options.businessHours.start : 0;
+        var startMillis = calEvent.start.getTime() - new Date(calEvent.start.getFullYear(), calEvent.start.getMonth(), calEvent.start.getDate(), firstHourDisplayed).getTime();
         var eventMillis = calEvent.end.getTime() - calEvent.start.getTime();    
         var pxTop = pxPerMillis * startMillis;
         var pxHeight = pxPerMillis * eventMillis;
@@ -671,7 +693,9 @@
     }
 
     function getEventDurationFromPositionedEventElement($weekDay, $calEvent, top, options) {
-         var start = new Date($weekDay.data("startDate").getTime() + Math.round(top / options.timeslotHeight) * options.millisPerTimeslot);
+        
+         var startOffsetMillis = options.onlyDisplayBusinessHours ? options.businessHours.start * 60 *60 * 1000 : 0;
+         var start = new Date($weekDay.data("startDate").getTime() + startOffsetMillis + Math.round(top / options.timeslotHeight) * options.millisPerTimeslot);
          var end = new Date(start.getTime() + ($calEvent.height() / options.timeslotHeight) * options.millisPerTimeslot);
          return {start: start, end: end};
     }
@@ -782,7 +806,7 @@
                 adjustForEventCollisions($weekDay, $calEvent, newCalEvent, calEvent, options);
                 
                 refreshEventDetails(newCalEvent, $calEvent, options);
-                positionEvent($weekDay, $calEvent);
+                positionEvent($weekDay, $calEvent, options);
                 
                 //trigger resize callback
                 options.eventResize(newCalEvent, calEvent, $calEvent);

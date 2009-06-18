@@ -63,6 +63,7 @@
 
 		$('#calendar').weekCalendar({
 			timeslotsPerHour: 4,
+			onlyDisplayBusinessHours : true,
 			height: function($calendar){
 				return $(window).height() - $("h1").outerHeight();
 			},
