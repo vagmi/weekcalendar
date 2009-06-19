@@ -6,6 +6,8 @@
 - Migrated code base to extend jquery-ui widget.
 - Improved inline method documentation.
 - Added 'readonly' config option to flag the entire calendar as readonly, preventing creation, dragging, dropping and resizing of events.
+- Added ability to configure day, month names for better i18n support
+- Fixed bug with IE7 resizing once an event gets to 2 timeslots or smaller
 
 
 2009-06-08 - 1.1.3
