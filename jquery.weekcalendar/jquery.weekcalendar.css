@@ -173,8 +173,11 @@ table.week-calendar-time-slots {
 	color: #fff;
 	padding: 0;
 	font-weight: bold;
-	cursor: move;
 	margin: 1px;
+}
+
+.ui-draggable .time {
+	cursor: move;
 }
 
 
