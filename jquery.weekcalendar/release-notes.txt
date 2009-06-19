@@ -3,6 +3,9 @@
 - Added ability to supply formatters for date and time
 - Added improved demo with creation / editing of events using jquery ui.
 - Added option to only display hours defined in the 'businessHours' config option.
+- Migrated code base to extend jquery-ui widget.
+- Improved inline method documentation.
+- Added 'readonly' config option to flag the entire calendar as readonly, preventing creation, dragging, dropping and resizing of events.
 
 
 2009-06-08 - 1.1.3

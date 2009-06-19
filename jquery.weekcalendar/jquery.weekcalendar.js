@@ -1,11 +1,11 @@
 /*
- * jQuery.weekCalendar v1.2.0-pre
+ * jQuery.weekCalendar v1.2.0
  * http://www.redredred.com.au/
  *
  * Requires:
  * - jquery.weekcalendar.css
  * - jquery 1.3.x
- * - jquery-ui 1.7.x (drag, drop, resize)
+ * - jquery-ui 1.7.x (widget, drag, drop, resize)
  *
  * Copyright (c) 2009 Rob Monie
  * Dual licensed under the MIT and GPL licenses:
@@ -310,9 +310,11 @@
 	        
 	        $weekDayColumns = $calendarContainer.find(".day-column-inner");
 	        $weekDayColumns.each(function(i, val) {
-	            $(this).height(options.timeslotHeight * options.timeslotsPerDay);  
-	            self._addDroppableToWeekDay($(this));
-	            self._setupEventCreationForWeekDay($(this));
+	            $(this).height(options.timeslotHeight * options.timeslotsPerDay); 
+                if(!options.readonly) {
+	               self._addDroppableToWeekDay($(this));
+	               self._setupEventCreationForWeekDay($(this));
+                }
 	        });
 	        
 	        $calendarContainer.find(".time-slot").height(options.timeslotHeight -1); //account for border
@@ -445,7 +447,7 @@
 	
 	        self.element.find(".week-calendar-header td.day-column-header").each(function(i, val) {
 	            
-	                var dayName = options.shortDayNames ? shortDays[i] : longDays[i];
+	                var dayName = options.shortDayNames ? options.shortDays[i] : options.longDays[i];
 	            
 	                $(this).html(dayName + "<br/>" + self._formatDate(currentDay, options.dateFormat));
 	                if(self._isToday(currentDay)) {
@@ -559,10 +561,10 @@
 	        self._positionEvent($weekDay, $calEvent);
 	        $calEvent.show();
 	        
-	        if(options.resizable(calEvent, $calEvent)) {
+	        if(!options.readonly && options.resizable(calEvent, $calEvent)) {
 	            self._addResizableToCalEvent(calEvent, $calEvent, $weekDay)
 	        }
-	        if(options.draggable(calEvent, $calEvent)) {
+	        if(!options.readonly && options.draggable(calEvent, $calEvent)) {
 	            self._addDraggableToCalEvent(calEvent, $calEvent);
 	        } 
 	        
@@ -1059,11 +1061,12 @@
 	     * http://jacwright.com/projects/javascript/date_format
 	     */
 	    _formatDate : function(date, format) {
+            var options = this.options;
 	        var returnStr = '';
 	        for (var i = 0; i < format.length; i++) {
 	            var curChar = format.charAt(i);
 	            if ($.isFunction(this._replaceChars[curChar])) {
-	                returnStr += this._replaceChars[curChar](date);
+	                returnStr += this._replaceChars[curChar](date, options);
 	            } else {
 	                returnStr += curChar;
 	            }
@@ -1073,49 +1076,48 @@
 	    
 	    _replaceChars : {
 	       
-	         
-	        // Day
-	        d: function(date) { return (date.getDate() < 10 ? '0' : '') + date.getDate(); },
-	        D: function(date) { return shortDays[date.getDay()]; },
-	        j: function(date) { return date.getDate(); },
-	        l: function(date) { return longDays[date.getDay()]; },
-	        N: function(date) { return date.getDay() + 1; },
-	        S: function(date) { return (date.getDate() % 10 == 1 && date.getDate() != 11 ? 'st' : (date.getDate() % 10 == 2 && date.getDate() != 12 ? 'nd' : (date.getDate() % 10 == 3 && date.getDate() != 13 ? 'rd' : 'th'))); },
-	        w: function(date) { return date.getDay(); },
-	        z: function(date) { return "Not Yet Supported"; },
-	        // Week
-	        W: function(date) { return "Not Yet Supported"; },
-	        // Month
-	        F: function(date) { return longMonths[date.getMonth()]; },
-	        m: function(date) { return (date.getMonth() < 11 ? '0' : '') + (date.getMonth() + 1); },
-	        M: function(date) { return shortMonths[date.getMonth()]; },
-	        n: function(date) { return date.getMonth() + 1; },
-	        t: function(date) { return "Not Yet Supported"; },
-	        // Year
-	        L: function(date) { return "Not Yet Supported"; },
-	        o: function(date) { return "Not Supported"; },
-	        Y: function(date) { return date.getFullYear(); },
-	        y: function(date) { return ('' + date.getFullYear()).substr(2); },
-	        // Time
-	        a: function(date) { return date.getHours() < 12 ? 'am' : 'pm'; },
-	        A: function(date) { return date.getHours() < 12 ? 'AM' : 'PM'; },
-	        B: function(date) { return "Not Yet Supported"; },
-	        g: function(date) { return date.getHours() % 12 || 12; },
-	        G: function(date) { return date.getHours(); },
-	        h: function(date) { return ((date.getHours() % 12 || 12) < 10 ? '0' : '') + (date.getHours() % 12 || 12); },
-	        H: function(date) { return (date.getHours() < 10 ? '0' : '') + date.getHours(); },
-	        i: function(date) { return (date.getMinutes() < 10 ? '0' : '') + date.getMinutes(); },
-	        s: function(date) { return (date.getSeconds() < 10 ? '0' : '') + date.getSeconds(); },
-	        // Timezone
-	        e: function(date) { return "Not Yet Supported"; },
-	        I: function(date) { return "Not Supported"; },
-	        O: function(date) { return (date.getTimezoneOffset() < 0 ? '-' : '+') + (date.getTimezoneOffset() / 60 < 10 ? '0' : '') + (date.getTimezoneOffset() / 60) + '00'; },
-	        T: function(date) { return "Not Yet Supported"; },
-	        Z: function(date) { return date.getTimezoneOffset() * 60; },
-	        // Full Date/Time
-	        c: function(date) { return "Not Yet Supported"; },
-	        r: function(date) { return date.toString(); },
-	        U: function(date) { return date.getTime() / 1000; }
+		        // Day
+		        d: function(date) { return (date.getDate() < 10 ? '0' : '') + date.getDate(); },
+		        D: function(date, options) { return options.shortDays[date.getDay()]; },
+		        j: function(date) { return date.getDate(); },
+		        l: function(date, options) { return options.longDays[date.getDay()]; },
+		        N: function(date) { return date.getDay() + 1; },
+		        S: function(date) { return (date.getDate() % 10 == 1 && date.getDate() != 11 ? 'st' : (date.getDate() % 10 == 2 && date.getDate() != 12 ? 'nd' : (date.getDate() % 10 == 3 && date.getDate() != 13 ? 'rd' : 'th'))); },
+		        w: function(date) { return date.getDay(); },
+		        z: function(date) { return "Not Yet Supported"; },
+		        // Week
+		        W: function(date) { return "Not Yet Supported"; },
+		        // Month
+		        F: function(date, options) { return options.longMonths[date.getMonth()]; },
+		        m: function(date) { return (date.getMonth() < 11 ? '0' : '') + (date.getMonth() + 1); },
+		        M: function(date, options) { return options.shortMonths[date.getMonth()]; },
+		        n: function(date) { return date.getMonth() + 1; },
+		        t: function(date) { return "Not Yet Supported"; },
+		        // Year
+		        L: function(date) { return "Not Yet Supported"; },
+		        o: function(date) { return "Not Supported"; },
+		        Y: function(date) { return date.getFullYear(); },
+		        y: function(date) { return ('' + date.getFullYear()).substr(2); },
+		        // Time
+		        a: function(date) { return date.getHours() < 12 ? 'am' : 'pm'; },
+		        A: function(date) { return date.getHours() < 12 ? 'AM' : 'PM'; },
+		        B: function(date) { return "Not Yet Supported"; },
+		        g: function(date) { return date.getHours() % 12 || 12; },
+		        G: function(date) { return date.getHours(); },
+		        h: function(date) { return ((date.getHours() % 12 || 12) < 10 ? '0' : '') + (date.getHours() % 12 || 12); },
+		        H: function(date) { return (date.getHours() < 10 ? '0' : '') + date.getHours(); },
+		        i: function(date) { return (date.getMinutes() < 10 ? '0' : '') + date.getMinutes(); },
+		        s: function(date) { return (date.getSeconds() < 10 ? '0' : '') + date.getSeconds(); },
+		        // Timezone
+		        e: function(date) { return "Not Yet Supported"; },
+		        I: function(date) { return "Not Supported"; },
+		        O: function(date) { return (date.getTimezoneOffset() < 0 ? '-' : '+') + (date.getTimezoneOffset() / 60 < 10 ? '0' : '') + (date.getTimezoneOffset() / 60) + '00'; },
+		        T: function(date) { return "Not Yet Supported"; },
+		        Z: function(date) { return date.getTimezoneOffset() * 60; },
+		        // Full Date/Time
+		        c: function(date) { return "Not Yet Supported"; },
+		        r: function(date) { return date.toString(); },
+		        U: function(date) { return date.getTime() / 1000; }
 	    }
         
     });
@@ -1145,7 +1147,7 @@
             },
             scrollToHourMillis : 500,
             allowCalEventOverlap : false,
-            
+            readonly: false,
             draggable : function(calEvent, element) { return true;},
             resizable : function(calEvent, element) { return true;},
             eventClick : function(){},
@@ -1157,16 +1159,15 @@
             eventMouseout : function(calEvent, $event) {},
             calendarBeforeLoad : function(calendar) {},
             calendarAfterLoad : function(calendar) {},
-            noEvents : function() {}
+            noEvents : function() {},
+            shortMonths : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            longMonths : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+            shortDays : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+            longDays : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 	    }
 	});
     
     var MILLIS_IN_DAY = 86400000;
     var MILLIS_IN_WEEK = MILLIS_IN_DAY * 7;
-    var shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    var longMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    var shortDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    var longDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    
     
 })(jQuery);
