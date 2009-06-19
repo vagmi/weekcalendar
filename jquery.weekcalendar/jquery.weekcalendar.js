@@ -143,6 +143,9 @@
             return times;
         }, 
         
+        getData : function(key) {
+           return this._getData(key); 
+        },
         
         /*********************
          * private functions *
@@ -1124,7 +1127,7 @@
    
     $.extend($.ui.weekCalendar, {
 	    version: '1.2.0',
-	    getter: ['getTimeslotTimes'],
+	    getter: ['getTimeslotTimes', 'getData'],
 	    defaults: {
 	        date: new Date(),
             timeFormat : "h:i a",

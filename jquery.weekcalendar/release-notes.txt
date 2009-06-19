@@ -1,4 +1,7 @@
-2009-06-08 - 1.2 (CURRENT DEV RELEASE)
+2009-06-19 - 1.2.1  (CURRENT DEV RELEASE)
+- Added public method 'getData' that returns the valiue of a named config option.
+
+2009-06-19 - 1.2 
 - Added better layout support for overlapping of events
 - Added ability to supply formatters for date and time
 - Added improved demo with creation / editing of events using jquery ui.
