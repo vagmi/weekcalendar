@@ -125,7 +125,7 @@
          */
         getTimeslotTimes : function(date) {
             var options = this.options;
-            var firstHourDisplayed = options.onlyDisplayBusinessHours ? options.businessHours.start : 0;
+            var firstHourDisplayed = options.businessHours.limitDisplay ? options.businessHours.start : 0;
             var startDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), firstHourDisplayed);
             
             var times = []
@@ -152,7 +152,7 @@
             
             var options = this.options;
             
-            if(options.onlyDisplayBusinessHours) {
+            if(options.businessHours.limitDisplay) {
                 options.timeslotsPerDay = options.timeslotsPerHour * (options.businessHours.end - options.businessHours.start);
                 options.millisToDisplay = (options.businessHours.end - options.businessHours.start) * 60 * 60 * 1000;
                 options.millisPerTimeslot = options.millisToDisplay / options.timeslotsPerDay;
@@ -278,8 +278,8 @@
 	            <div class=\"time-slot-wrapper\">\
 	            <div class=\"time-slots\">";
 	        
-	        var start = options.onlyDisplayBusinessHours ? options.businessHours.start : 0;
-	        var end = options.onlyDisplayBusinessHours ? options.businessHours.end : 24;    
+	        var start = options.businessHours.limitDisplay ? options.businessHours.start : 0;
+	        var end = options.businessHours.limitDisplay ? options.businessHours.end : 24;    
 	            
 	        for(var i = start ; i < end; i++) {
 	            for(var j=0;j<options.timeslotsPerHour - 1; j++) {
@@ -447,7 +447,7 @@
 	
 	        self.element.find(".week-calendar-header td.day-column-header").each(function(i, val) {
 	            
-	                var dayName = options.shortDayNames ? options.shortDays[i] : options.longDays[i];
+	                var dayName = options.useShortDayNames ? options.shortDays[i] : options.longDays[i];
 	            
 	                $(this).html(dayName + "<br/>" + self._formatDate(currentDay, options.dateFormat));
 	                if(self._isToday(currentDay)) {
@@ -701,7 +701,7 @@
 	        var options = this.options;
 	        var calEvent = $calEvent.data("calEvent");
 	        var pxPerMillis = $weekDay.height() / options.millisToDisplay;
-	        var firstHourDisplayed = options.onlyDisplayBusinessHours ? options.businessHours.start : 0;
+	        var firstHourDisplayed = options.businessHours.limitDisplay ? options.businessHours.start : 0;
 	        var startMillis = calEvent.start.getTime() - new Date(calEvent.start.getFullYear(), calEvent.start.getMonth(), calEvent.start.getDate(), firstHourDisplayed).getTime();
 	        var eventMillis = calEvent.end.getTime() - calEvent.start.getTime();    
 	        var pxTop = pxPerMillis * startMillis;
@@ -716,7 +716,7 @@
          */
 	    _getEventDurationFromPositionedEventElement : function($weekDay, $calEvent, top) {
 	         var options = this.options;
-	         var startOffsetMillis = options.onlyDisplayBusinessHours ? options.businessHours.start * 60 *60 * 1000 : 0;
+	         var startOffsetMillis = options.businessHours.limitDisplay ? options.businessHours.start * 60 *60 * 1000 : 0;
 	         var start = new Date($weekDay.data("startDate").getTime() + startOffsetMillis + Math.round(top / options.timeslotHeight) * options.millisPerTimeslot);
 	         var end = new Date(start.getTime() + ($calEvent.height() / options.timeslotHeight) * options.millisPerTimeslot);
 	         return {start: start, end: end};
@@ -866,7 +866,7 @@
 	    _refreshEventDetails : function(calEvent, $calEvent) {
 	        var self = this;
             var options = this.options;
-	        $calEvent.find(".time").text(self._formatDate(calEvent.start, options.timeFormat) + options.fromToTimeSeparator + self._formatDate(calEvent.end, options.timeFormat));
+	        $calEvent.find(".time").text(self._formatDate(calEvent.start, options.timeFormat) + options.timeSeparator + self._formatDate(calEvent.end, options.timeFormat));
 	        $calEvent.find(".title").text(calEvent.title);
 	        $calEvent.data("calEvent", calEvent);
 	    },
@@ -1129,12 +1129,11 @@
 	        date: new Date(),
             timeFormat : "h:i a",
             dateFormat : "M d, Y",
-            shortDayNames: false,
-            fromToTimeSeparator : " to ",
+            useShortDayNames: false,
+            timeSeparator : " to ",
             startParam : "start",
             endParam : "end",
-            businessHours : {start: 8, end: 18},
-            onlyDisplayBusinessHours : false,
+            businessHours : {start: 8, end: 18, limitDisplay : false},
             newEventText : "New Event",
             timeslotHeight: 20,
             defaultEventLength : 2,
