@@ -12,7 +12,7 @@
 - Added ability to configure day, month names for better i18n support
 - Fixed bug with IE7 resizing once an event gets to 2 timeslots or smaller
 
-
+ 
 2009-06-08 - 1.1.3
 - Removed console.log that was causing issues in IE.
 - Fixed an issue with nav buttons in certain environments

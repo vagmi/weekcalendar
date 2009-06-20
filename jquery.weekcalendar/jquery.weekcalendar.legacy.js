@@ -31,7 +31,7 @@
                 $.data(this, 'weekCalendar')[options].apply(this, args);
             });
             return this;
-        }
+        } 
          
         /*
         *   Other options not in list below

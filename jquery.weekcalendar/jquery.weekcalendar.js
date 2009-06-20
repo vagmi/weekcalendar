@@ -36,7 +36,7 @@
                 self._resizeCalendar();
             });
             
-        },
+        }, 
         
         /********************
          * public functions *
