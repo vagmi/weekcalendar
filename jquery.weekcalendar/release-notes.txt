@@ -1,5 +1,6 @@
-2009-06-19 - 1.2.1  (CURRENT DEV RELEASE)
+1.2.1  (CURRENT DEV RELEASE)
 - Added public method 'getData' that returns the valiue of a named config option.
+- Added public method 'clear' that clears all calendar events from the calendar.
 
 2009-06-19 - 1.2 
 - Added better layout support for overlapping of events

@@ -50,6 +50,13 @@
         },
     
         /*
+         * Clear all events currently loaded into the calendar
+         */
+        clear : function() {
+            this._clearCalendar();  
+        },
+        
+        /*
          * Go to this week
          */
         today : function() {
@@ -1025,39 +1032,13 @@
          */
 	    _cleanDate : function(d) {
 	        if (typeof d == 'string') {
-	            return this._parseISO8601(d, true) || Date.parse(d) || new Date(parseInt(d));
+	            return $.weekCalendar.parseISO8601(d, true) || Date.parse(d) || new Date(parseInt(d));
             }
 	        if (typeof d == 'number') {
 	            return new Date(d);
             }
 	        return d;
 	    },
-	    
-	    _parseISO8601 : function(s, ignoreTimezone) {
-	        // derived from http://delete.me.uk/2005/03/iso8601.html
-	        var regexp = "([0-9]{4})(-([0-9]{2})(-([0-9]{2})" +
-	            "(T([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]+))?)?" +
-	            "(Z|(([-+])([0-9]{2}):([0-9]{2})))?)?)?)?";
-	        var d = s.match(new RegExp(regexp));
-	        if (!d) return null;
-	        var offset = 0;
-	        var date = new Date(d[1], 0, 1);
-	        if (d[3]) { date.setMonth(d[3] - 1); }
-	        if (d[5]) { date.setDate(d[5]); }
-	        if (d[7]) { date.setHours(d[7]); }
-	        if (d[8]) { date.setMinutes(d[8]); }
-	        if (d[10]) { date.setSeconds(d[10]); }
-	        if (d[12]) { date.setMilliseconds(Number("0." + d[12]) * 1000); }
-	        if (!ignoreTimezone) {
-	            if (d[14]) {
-	                offset = (Number(d[16]) * 60) + Number(d[17]);
-	                offset *= ((d[15] == '-') ? 1 : -1);
-	            }
-	            offset -= date.getTimezoneOffset();
-	        }
-	        return new Date(Number(date) + (offset * 60 * 1000));
-	    },
-	    
 	    
 	    /*
 	     * date formatting is adapted from 
@@ -1171,5 +1152,36 @@
     
     var MILLIS_IN_DAY = 86400000;
     var MILLIS_IN_WEEK = MILLIS_IN_DAY * 7;
+    
+    $.weekCalendar = function() {
+        return {
+            parseISO8601 : function(s, ignoreTimezone) {
+    
+                // derived from http://delete.me.uk/2005/03/iso8601.html
+                var regexp = "([0-9]{4})(-([0-9]{2})(-([0-9]{2})" +
+                    "(T([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]+))?)?" +
+                    "(Z|(([-+])([0-9]{2}):([0-9]{2})))?)?)?)?";
+                var d = s.match(new RegExp(regexp));
+                if (!d) return null;
+                var offset = 0;
+                var date = new Date(d[1], 0, 1);
+                if (d[3]) { date.setMonth(d[3] - 1); }
+                if (d[5]) { date.setDate(d[5]); }
+                if (d[7]) { date.setHours(d[7]); }
+                if (d[8]) { date.setMinutes(d[8]); }
+                if (d[10]) { date.setSeconds(d[10]); }
+                if (d[12]) { date.setMilliseconds(Number("0." + d[12]) * 1000); }
+                if (!ignoreTimezone) {
+                    if (d[14]) {
+                        offset = (Number(d[16]) * 60) + Number(d[17]);
+                        offset *= ((d[15] == '-') ? 1 : -1);
+                    }
+                    offset -= date.getTimezoneOffset();
+                }
+                return new Date(Number(date) + (offset * 60 * 1000));
+            }
+        };
+    }();
+    
     
 })(jQuery);
