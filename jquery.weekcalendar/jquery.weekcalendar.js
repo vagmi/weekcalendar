@@ -27,9 +27,11 @@
             self._computeOptions();
             self._setupEventDelegation();
             self._renderCalendar();
-            self._scrollToHour(new Date().getHours());
             self._loadCalEvents();
             self._resizeCalendar();
+            setTimeout(function() {
+                self._scrollToHour(new Date().getHours());
+            }, 200);
             
             $(window).unbind("resize.weekcalendar");
             $(window).bind("resize.weekcalendar", function(){
@@ -804,7 +806,11 @@
 	            handle : ".time",
 	            containment: ".calendar-scrollable-grid",
 	            opacity: 0.5,
-	            grid : [$calEvent.outerWidth() + 1, options.timeslotHeight ]
+	            grid : [$calEvent.outerWidth() + 1, options.timeslotHeight ],
+                start : function(event, ui) {
+                    var $calEvent = ui.draggable;
+                    options.eventDrag(calEvent, $calEvent);
+               }
 	        });
 	        
 	    },
@@ -1135,6 +1141,7 @@
             resizable : function(calEvent, element) { return true;},
             eventClick : function(){},
             eventRender : function(calEvent, element) { return element;},
+            eventDrag : function(calEvent, element) {},
             eventDrop : function(calEvent, element){},
             eventResize : function(calEvent, element){},
             eventNew : function(calEvent, element) {},
