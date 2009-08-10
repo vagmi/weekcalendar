@@ -1119,7 +1119,7 @@
 		        W: function(date) { return "Not Yet Supported"; },
 		        // Month
 		        F: function(date, options) { return options.longMonths[date.getMonth()]; },
-		        m: function(date) { return (date.getMonth() < 11 ? '0' : '') + (date.getMonth() + 1); },
+		        m: function(date) { return (date.getMonth() < 9 ? '0' : '') + (date.getMonth() + 1); },
 		        M: function(date, options) { return options.shortMonths[date.getMonth()]; },
 		        n: function(date) { return date.getMonth() + 1; },
 		        t: function(date) { return "Not Yet Supported"; },
