@@ -3,6 +3,10 @@
 - Added public method 'clear' that clears all calendar events from the calendar.
 - Updated scroll to hour to delay to fix a timing issue
 - Added eventDrag callback
+- Added support for 24 hour timeslot display as an alternative to AM / PM 12 hour day. (thanks dozebox!)
+
+**Thanks to everyone who logged issues and made suggestions in this release. 
+
 
 2009-06-19 - 1.2 
 - Added better layout support for overlapping of events

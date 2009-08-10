@@ -305,8 +305,13 @@
 	        for(var i = start ; i < end; i++) {
 	
 	            var bhClass = (options.businessHours.start <= i && options.businessHours.end > i) ? "business-hours" : "";                 
-	            calendarBodyHtml += "<div class=\"hour-header " + bhClass + "\">\
-	                    <div class=\"time-header-cell\">" + self._hourForIndex(i) + "<span class=\"am-pm\">" + self._amOrPm(i) + "</span></div></div>";
+	            calendarBodyHtml += "<div class=\"hour-header " + bhClass + "\">"
+                if(options.use24Hour) {
+	               calendarBodyHtml += "<div class=\"time-header-cell\">" + self._24HourForIndex(i) + "</div>";
+                } else {
+                   calendarBodyHtml += "<div class=\"time-header-cell\">" + self._hourForIndex(i) + "<span class=\"am-pm\">" + self._amOrPm(i) + "</span></div>";
+                }
+                calendarBodyHtml += "</div>";
 	        }
 	        
 	        calendarBodyHtml += "</td>";
@@ -930,6 +935,16 @@
 	            return index - 12;
 	        }
 	    },
+        
+        _24HourForIndex : function(index) {
+            if(index === 0 ) { //midnight
+                return "00:00"; 
+            } else if(index < 10) { 
+                return "0"+index+":00";
+            } else { 
+                return index+":00";
+            }
+        },
 	    
 	    _amOrPm : function (hourOfDay) {
 	        return hourOfDay < 12 ? "AM" : "PM";
@@ -1127,6 +1142,7 @@
 	        date: new Date(),
             timeFormat : "h:i a",
             dateFormat : "M d, Y",
+            use24Hour : false,
             useShortDayNames: false,
             timeSeparator : " to ",
             startParam : "start",
