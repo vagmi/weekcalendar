@@ -395,8 +395,15 @@
 	                    
 	                    $newEvent.remove();
 	                    var newCalEvent = {start: eventDuration.start, end: eventDuration.end, title: options.newEventText};
-	                    var $renderedCalEvent = self._renderEvent(newCalEvent, $weekDay);
-	                    self._adjustOverlappingEvents($weekDay); 
+                        var $renderedCalEvent = self._renderEvent(newCalEvent, $weekDay);
+                        
+                        if(!options.allowCalEventOverlap) {
+	                       self._adjustForEventCollisions($weekDay, $renderedCalEvent, newCalEvent, newCalEvent);
+	                       self._positionEvent($weekDay, $renderedCalEvent);
+                        } else {
+	                       self._adjustOverlappingEvents($weekDay); 
+                        }
+                        
 	                    options.eventNew(eventDuration, $renderedCalEvent);
 	                 }
 	        });
@@ -758,6 +765,7 @@
 	              
 	              adjustedStart = currentCalEvent.end; 
 	            }
+                
 	            
 	            //has been dropped onto existing event overlapping the start time
 	            if(newCalEvent.end.getTime() > currentCalEvent.start.getTime() 
