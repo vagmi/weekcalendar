@@ -45,14 +45,17 @@
 		<h2>Summary</h2>
 		<p>
 			This calendar implementation demonstrates further usage of the calendar with editing and deleting of events. 
-			It stops short however of implementing a server-side backend which is out of the scope of this plugin. It 
+			It stops short however of implementing a server-side back-end which is out of the scope of this plugin. It 
 			should be reasonably evident by viewing the demo source code, where the points for adding ajax should be. 
 			Note also that this is **just a demo** and some of the demo code itself is rough. It could certainly be 
 			optimised.
 		</p>
+		<p>
+			***Note: This demo is straight out of SVN trunk so may show unreleased features from time to time.
+		</p>
 		<h2>Demonstrated Features</h2>
 		<p>
-			This calendar imlementation demonstrates the following features:
+			This calendar implementation demonstrates the following features:
 		</p>
 		<ul class="formatted">
 			<li>Adding, updating and deleting of calendar events using jquery-ui dialog. Also includes 
@@ -60,6 +63,7 @@
 				of the data within the calEvent</li>
 			<li>Dragging and resizing of calendar events</li>
 			<li>Restricted timeslot rendering based on business hours</li>
+			<li>Week starts on Monday instead of the default of Sunday</li>
 			<li>Allowing calEvent overlap with staggered rendering of overlapping events</li>
 			<li>Use of the 'getTimeslotTimes' method to retrieve valid times for a given event day. This is used to populate
 				select fields for adding, updating events.</li>

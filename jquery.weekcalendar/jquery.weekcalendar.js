@@ -164,6 +164,20 @@
             
             var options = this.options;
             
+            if (options.firstDayOfWeek != 0){
+                var rotate = function(a, p){ // rotate v1.0 - @see http://snippets.dzone.com/posts/show/2202
+                    for(var l = a.length, p = (Math.abs(p) >= l && (p %= l), p < 0 && (p += l), p), i, x; p; p = (Math.ceil(l / p) - 1) * p - l + (l = p)) {
+                        for(i = l; i > p; x = a[--i], a[i] = a[i - p], a[i - p] = x);
+                    }
+                    return a;
+                };
+                
+                options.shortDays = rotate(options.shortDays, (-1) * options.firstDayOfWeek);
+                options.longDays = rotate(options.longDays, (-1) * options.firstDayOfWeek);
+            }
+
+
+            
             if(options.businessHours.limitDisplay) {
                 options.timeslotsPerDay = options.timeslotsPerHour * (options.businessHours.end - options.businessHours.start);
                 options.millisToDisplay = (options.businessHours.end - options.businessHours.start) * 60 * 60 * 1000;
@@ -591,6 +605,8 @@
 	        if(!options.readonly && options.draggable(calEvent, $calEvent)) {
 	            self._addDraggableToCalEvent(calEvent, $calEvent);
 	        } 
+            
+            options.eventAfterRender(calEvent, $calEvent);
 	        
 	        return $calEvent;
 	        
@@ -1002,9 +1018,9 @@
         * returns the date on the first millisecond of the week
         */
 	    _dateFirstDayOfWeek : function(date) {
-	        
+	        var self = this;
 	        var midnightCurrentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-	        var currentDayOfWeek = midnightCurrentDate.getDay();
+	        var currentDayOfWeek = midnightCurrentDate.getDay() - self.options.firstDayOfWeek;
 	        var millisToSubtract = currentDayOfWeek * 86400000;
 	        return new Date(midnightCurrentDate.getTime() - millisToSubtract);
 	        
@@ -1014,8 +1030,9 @@
         * returns the date on the first millisecond of the last day of the week
         */
 	    _dateLastDayOfWeek : function(date) {
+            var self = this;
 	        var midnightCurrentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-	        var currentDayOfWeek = midnightCurrentDate.getDay();
+	        var currentDayOfWeek = midnightCurrentDate.getDay() - self.options.firstDayOfWeek;
 	        var millisToAdd = (6 - currentDayOfWeek) * MILLIS_IN_DAY;
 	        return new Date(midnightCurrentDate.getTime() + millisToAdd);
 	    },
@@ -1143,6 +1160,7 @@
             timeFormat : "h:i a",
             dateFormat : "M d, Y",
             use24Hour : false,
+            firstDayOfWeek : 0, // 0 = Sunday, 1 = Monday, 2 = Tuesday, ... , 6 = Saturday
             useShortDayNames: false,
             timeSeparator : " to ",
             startParam : "start",
@@ -1165,6 +1183,7 @@
             resizable : function(calEvent, element) { return true;},
             eventClick : function(){},
             eventRender : function(calEvent, element) { return element;},
+            eventAfterRender : function(calEvent, element) { return element;},
             eventDrag : function(calEvent, element) {},
             eventDrop : function(calEvent, element){},
             eventResize : function(calEvent, element){},

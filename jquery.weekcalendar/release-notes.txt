@@ -4,6 +4,8 @@
 - Updated scroll to hour to delay to fix a timing issue
 - Added eventDrag callback
 - Added support for 24 hour timeslot display as an alternative to AM / PM 12 hour day. (thanks dozebox!)
+- Added eventAfterRender callback
+- Added support for weeks starting on any day of the week (thanks Bramus!)
 
 **Thanks to everyone who logged issues and made suggestions in this release. 
 
