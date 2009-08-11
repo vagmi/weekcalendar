@@ -474,6 +474,8 @@
                     var dayIndex = 0;
                     if (options.firstDayOfWeek != 0){
                          dayIndex = options.firstDayOfWeek + i > 6 ? 6 - i : options.firstDayOfWeek + i; 
+                    } else {
+                        dayIndex = i;
                     }
                 
                     var dayName = options.useShortDayNames ? options.shortDays[dayIndex] : options.longDays[dayIndex];
