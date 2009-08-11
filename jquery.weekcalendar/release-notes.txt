@@ -3,9 +3,13 @@
 - Added public method 'clear' that clears all calendar events from the calendar.
 - Updated scroll to hour to delay to fix a timing issue
 - Added eventDrag callback
-- Added support for 24 hour timeslot display as an alternative to AM / PM 12 hour day. (thanks dozebox!)
+- Added support for 24 hour timeslot display as an alternative to AM / PM 12 hour day. (thanks dozebox)
 - Added eventAfterRender callback
 - Added support for weeks starting on any day of the week (thanks Bramus!)
+- Added better overlapping event support with the ability to have staggered or parallel layout of overlapping events. (thanks Roderik)
+- hovering over overlapping events brings them into focus
+
+
 
 **Thanks to everyone who logged issues and made suggestions in this release. 
 

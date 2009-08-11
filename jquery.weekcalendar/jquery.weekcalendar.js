@@ -610,26 +610,48 @@
          * for greater readability
          */
         _adjustOverlappingEvents : function($weekDay) {
-            if(this.options.allowCalEventOverlap) {
-                var groups = this._groupOverlappingEventElements($weekDay);
+            var self = this;
+            if(self.options.allowCalEventOverlap) {
+                var groups = self._groupOverlappingEventElements($weekDay);
                 
                 $.each(groups, function(){
+                    var groupAmount = this.length;
+                    var curGroup = this;
+                    // do we want events to be displayed as overlapping 
+                    if (self.options.overlapEventsSeparate){
+                        var newWidth = 100/groupAmount;
+                        var newLeftAdd = newWidth;
+                    } else {
+                        // TODO what happens when the group has more than 10 elements
+                        var newWidth = (100 - (groupAmount*10));
+                        var newLeftAdd = (100 - newWidth) / (groupAmount-1);
+                    }
                     $.each(this, function(i){
-                        if(i % 2 === 0) {
-                            $(this).css({width: "70%", left: 0, right: ""});
-                        } else {
-                            $(this).css({width: "70%", left: "", right: 0});
+                        var newLeft = (i * newLeftAdd); 
+                        // bring mouseovered event to the front 
+                        if(!self.options.overlapEventsSeparate){
+                            $(this).mouseover(function() {
+                                var i = 0;
+                                $.each(curGroup, function() {
+                                    $(this).css({"z-index": ++i  + ""});
+                                });
+                                $(this).css({"z-index": groupAmount});
+                            });
                         }
+                         $(this).css({width: newWidth+"%", left: newLeft+"%", right: 0});
                     });
                 });
             }
         },
-        
+        _adjustEventPositon: function($group){
+            
+
+        },
         /*
          * Find groups of overlapping events
          */
         _groupOverlappingEventElements : function($weekDay) {
-            
+            var self = this;
             var $events = $weekDay.find(".cal-event");
             var sortedEvents = $events.sort(function(a, b){
                 return $(a).data("calEvent").start.getTime() - $(b).data("calEvent").start.getTime();
@@ -638,55 +660,79 @@
             var $lastEvent;
             var groups = [];
             var currentGroup = [];
+            var $curEvent;
+            var currentGroupStartTime = 0;
+            var currentGroupEndTime = 0;
+            var lastGroupEndTime = 0;
             $.each(sortedEvents, function(){
-                $(this).css({width: "100%", left: "", right: ""});
-                if($lastEvent && $lastEvent.data("calEvent").end.getTime() > $(this).data("calEvent").start.getTime()) {
-                    if(!currentGroup.length) {
-                       currentGroup.push($lastEvent);
+                $curEvent = $(this);
+                currentGroupStartTime = $curEvent.data("calEvent").start.getTime();
+                currentGroupEndTime = $curEvent.data("calEvent").end.getTime();
+                $curEvent.css({width: "100%", left: "0%", right: "", "z-index": "1"});
+                // if current start time is lower than current endtime time than either this event is earlier than the group, or already within the group   
+                if ($curEvent.data("calEvent").start.getTime() < lastGroupEndTime) {
+                    return;
+                }
+                // loop through all current weekday events to check if they belong to the same group
+                $.each(sortedEvents, function() {
+                    // check for same element and possibility to even be in the same group  note: somehow ($curEvent == $(this) doens't work 
+                    if ($curEvent.data("calEvent").id == $(this).data("calEvent").id || 
+                        currentGroupStartTime > $(this).data("calEvent").start.getTime() ||
+                        currentGroupEndTime < $(this).data("calEvent").start.getTime()) {
+                        return;
                     }
-                    currentGroup.push($(this));
-                } else if(currentGroup.length) {
-                        groups.push(currentGroup);
-                        currentGroup = [];
+                    //set new endtime of the group
+                    if ($(this).data("calEvent").end.getTime() > currentGroupEndTime) {
+                        currentGroupEndTime = $(this).data("calEvent").end.getTime();
+                    }
+                    // ain't we adding the same element
+                    if ($.inArray($(this), currentGroup) == -1) {
+                        currentGroup.push($(this));
+                    }
+                    // ain't we adding the same element
+                    if ($.inArray($curEvent, currentGroup) == -1) {
+                        currentGroup.push($curEvent);
+                    }
+                });
+                if(currentGroup.length) {
+                    currentGroup.sort(function(a,b){
+                        if ($(a).data("calEvent").start.getTime() > $(b).data("calEvent").start.getTime()) {
+                            return 1;
+                        } else if ($(a).data("calEvent").start.getTime() > $(b).data("calEvent").start.getTime()) {
+                            return -1;
+                        } else {
+                            return ($(a).data("calEvent").end.getTime() - $(a).data("calEvent").start.getTime()) 
+                                         - ($(b).data("calEvent").end.getTime() - $(b).data("calEvent").start.getTime());
+                        }
+                    });
+                    groups.push(currentGroup);
+                    currentGroup = [];
+                    lastGroupEndTime = currentGroupEndTime;
                 } 
-                
-                $lastEvent = $(this);
-            });
             
-            if(currentGroup.length) {
-                groups.push(currentGroup);
-            }
+            });
             
             return groups;
             
         },
-        
         /*
-         * Check if the events provided overlap in time
+         * Check if two groups containt the same events. It assumes the groups are sorted NOTE: might be obsolete
          */
-        _eventsOverlap : function(thisEvent, thatEvent) {
-            
-            //overlapping end time
-            if(thisEvent.start.getTime() < currentCalEvent.end.getTime() 
-                    && thisEvent.end.getTime() >= thatEvent.end.getTime()) {
-                  
-              return true;
-            }
-                
-            //overlapping the start time
-            if(thisEvent.end.getTime() > thatEvent.start.getTime() 
-                && thisEvent.start.getTime() <= thatEvent.start.getTime()) {
-              
-              return true;
-            }
-            //has been dropped inside existing event with same or larger duration
-            if(thisEvent.end.getTime() <= thatEvent.end.getTime() 
-                && thisEvent.start.getTime() >= thatEvent.start.getTime()) {
-                   
-               return true;
+        _compareGroups: function(thisGroup, thatGroup){
+            if (thisGroup.length != thatGroup.length) {
+                return false;
             }
             
-         },
+            for (var i = 0; i < thisGroup.length; i++) {
+                if (thisGroup[i].data("calEvent").id != thatGroup[i].data("calEvent").id) {
+                    return false;
+                }
+            }
+            
+            return true;
+        },  
+
+
         
         /*
          * find the weekday in the current calendar that the calEvent falls within
@@ -1171,6 +1217,7 @@
             },
             scrollToHourMillis : 500,
             allowCalEventOverlap : false,
+            overlapEventsSeparate: false,
             readonly: false,
             draggable : function(calEvent, element) { return true;},
             resizable : function(calEvent, element) { return true;},
