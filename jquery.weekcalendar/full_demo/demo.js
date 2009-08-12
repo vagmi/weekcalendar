@@ -1,4 +1,5 @@
 
+
 $(document).ready(function() {
 
    
@@ -64,9 +65,9 @@ $(document).ready(function() {
                 }
             }).show();
              
-            $dialogContent.find(".date_holder").text(calEvent.start.getFullYear() + "-" + calEvent.start.getMonth() + "-" + calEvent.start.getDate());
+            $dialogContent.find(".date_holder").text(calEvent.start.getFullYear() + "-" + (calEvent.start.getMonth() + 1) + "-" + calEvent.start.getDate());
             setupStartAndEndTimeFields(startField, endField, calEvent, $calendar.weekCalendar("getTimeslotTimes", calEvent.start));
-            $(window).resize(); //fixes a bug in modal overlay size ??
+            $(window).resize().resize(); //fixes a bug in modal overlay size ??
             
             
 		},
@@ -119,9 +120,9 @@ $(document).ready(function() {
             
             var startField = $dialogContent.find("select[name='start']").val(calEvent.start);
             var endField =  $dialogContent.find("select[name='end']").val(calEvent.end);
-            $dialogContent.find(".date_holder").text(calEvent.start.getFullYear() + "-" + calEvent.start.getMonth() + "-" + calEvent.start.getDate());
+            $dialogContent.find(".date_holder").text(calEvent.start.getFullYear() + "-" + (calEvent.start.getMonth() + 1) + "-" + calEvent.start.getDate());
             setupStartAndEndTimeFields(startField, endField, calEvent, $calendar.weekCalendar("getTimeslotTimes", calEvent.start));
-		    $(window).resize(); //fixes a bug in modal overlay size ??
+		    $(window).resize().resize(); //fixes a bug in modal overlay size ??
         
         },
 		eventMouseover : function(calEvent, $event) {
