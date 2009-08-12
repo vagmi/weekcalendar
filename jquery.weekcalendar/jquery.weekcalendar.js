@@ -630,12 +630,12 @@
                         var newLeft = (i * newLeftAdd); 
                         // bring mouseovered event to the front 
                         if(!self.options.overlapEventsSeparate){
-                            $(this).mouseover(function() {
-                                var i = 0;
-                                $.each(curGroup, function() {
-                                    $(this).css({"z-index": ++i  + ""});
-                                });
-                                $(this).css({"z-index": groupAmount});
+                            $(this).bind("mouseover.z-index",function(){
+                                 var $elem = $(this);
+                                 $.each(curGroup, function() {
+					                $(this).css({"z-index":  "1"});
+					            });
+					            $elem.css({"z-index": "3"});
                             });
                         }
                          $(this).css({width: newWidth+"%", left: newLeft+"%", right: 0});
@@ -643,10 +643,8 @@
                 });
             }
         },
-        _adjustEventPositon: function($group){
-            
-
-        },
+        
+       
         /*
          * Find groups of overlapping events
          */
@@ -665,10 +663,12 @@
             var currentGroupEndTime = 0;
             var lastGroupEndTime = 0;
             $.each(sortedEvents, function(){
+                
                 $curEvent = $(this);
                 currentGroupStartTime = $curEvent.data("calEvent").start.getTime();
                 currentGroupEndTime = $curEvent.data("calEvent").end.getTime();
                 $curEvent.css({width: "100%", left: "0%", right: "", "z-index": "1"});
+                $curEvent.unbind("mouseover.z-index");
                 // if current start time is lower than current endtime time than either this event is earlier than the group, or already within the group   
                 if ($curEvent.data("calEvent").start.getTime() < lastGroupEndTime) {
                     return;
@@ -677,8 +677,8 @@
                 $.each(sortedEvents, function() {
                     // check for same element and possibility to even be in the same group  note: somehow ($curEvent == $(this) doens't work 
                     if ($curEvent.data("calEvent").id == $(this).data("calEvent").id || 
-                        currentGroupStartTime > $(this).data("calEvent").start.getTime() ||
-                        currentGroupEndTime < $(this).data("calEvent").start.getTime()) {
+                        currentGroupStartTime > $(this).data("calEvent").start.getTime()+1 ||
+                        currentGroupEndTime < $(this).data("calEvent").start.getTime()+1) {
                         return;
                     }
                     //set new endtime of the group
@@ -698,7 +698,7 @@
                     currentGroup.sort(function(a,b){
                         if ($(a).data("calEvent").start.getTime() > $(b).data("calEvent").start.getTime()) {
                             return 1;
-                        } else if ($(a).data("calEvent").start.getTime() > $(b).data("calEvent").start.getTime()) {
+                        } else if ($(a).data("calEvent").start.getTime() < $(b).data("calEvent").start.getTime()) {
                             return -1;
                         } else {
                             return ($(a).data("calEvent").end.getTime() - $(a).data("calEvent").start.getTime()) 
@@ -869,16 +869,19 @@
          * Add draggable capabilities to an event
          */
         _addDraggableToCalEvent : function(calEvent, $calEvent) {
+            var self = this;
             var options = this.options;
+            var $weekDay = self._findWeekDayForEvent(calEvent, self.element.find(".week-calendar-time-slots .day-column-inner"));
             $calEvent.draggable({
                 handle : ".time",
                 containment: ".calendar-scrollable-grid",
+                revert: 'valid',
                 opacity: 0.5,
                 grid : [$calEvent.outerWidth() + 1, options.timeslotHeight ],
                 start : function(event, ui) {
                     var $calEvent = ui.draggable;
                     options.eventDrag(calEvent, $calEvent);
-               }
+                }
             });
             
         },
@@ -901,12 +904,16 @@
                     var $weekDayColumns = self.element.find(".day-column-inner");
                     var $newEvent = self._renderEvent(newCalEvent, self._findWeekDayForEvent(newCalEvent, $weekDayColumns));
                     $calEvent.hide();
-                    
+                     
                     //trigger drop callback
                     options.eventDrop(newCalEvent, calEvent, $newEvent);
                     $calEvent.data("preventClick", true);
                     setTimeout(function(){
+                        var $weekDayOld = self._findWeekDayForEvent($calEvent.data("calEvent"), self.element.find(".week-calendar-time-slots .day-column-inner"));
                         $calEvent.remove();
+                        if ($weekDayOld.data("startDate") != $weekDay.data("startDate")) {
+                            self._adjustOverlappingEvents($weekDayOld);
+                        }
                         self._adjustOverlappingEvents($weekDay);
                     }, 500);
                                     
