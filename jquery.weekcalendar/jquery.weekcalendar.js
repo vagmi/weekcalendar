@@ -1,5 +1,5 @@
 /*
- * jQuery.weekCalendar v1.2.0
+ * jQuery.weekCalendar v1.2.1-pre
  * http://www.redredred.com.au/
  *
  * Requires:
@@ -471,14 +471,7 @@
     
             self.element.find(".week-calendar-header td.day-column-header").each(function(i, val) {
                 
-                    var dayIndex = 0;
-                    if (options.firstDayOfWeek != 0){
-                         dayIndex = options.firstDayOfWeek + i > 6 ? 6 - i : options.firstDayOfWeek + i; 
-                    } else {
-                        dayIndex = i;
-                    }
-                
-                    var dayName = options.useShortDayNames ? options.shortDays[dayIndex] : options.longDays[dayIndex];
+                    var dayName = options.useShortDayNames ? options.shortDays[currentDay.getDay()] : options.longDays[currentDay.getDay()];
                 
                     $(this).html(dayName + "<br/>" + self._formatDate(currentDay, options.dateFormat));
                     if(self._isToday(currentDay)) {
@@ -1066,8 +1059,7 @@
         _dateFirstDayOfWeek : function(date) {
             var self = this;
             var midnightCurrentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-            var currentDayOfWeek = midnightCurrentDate.getDay();
-            var millisToSubtract = (currentDayOfWeek - self.options.firstDayOfWeek) * 86400000;
+            var millisToSubtract = self._getAdjustedDayIndex(midnightCurrentDate) * 86400000;
             return new Date(midnightCurrentDate.getTime() - millisToSubtract);
             
         },
@@ -1078,9 +1070,20 @@
         _dateLastDayOfWeek : function(date) {
             var self = this;
             var midnightCurrentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-            var currentDayOfWeek = midnightCurrentDate.getDay();
-            var millisToAdd = (6 - currentDayOfWeek - self.options.firstDayOfWeek) * MILLIS_IN_DAY;
+            var millisToAdd = (6 - self._getAdjustedDayIndex(midnightCurrentDate)) * MILLIS_IN_DAY;
             return new Date(midnightCurrentDate.getTime() + millisToAdd);
+        },
+        
+        /*
+         * gets the index of the current day adjusted based on options
+         */
+        _getAdjustedDayIndex : function(date) {
+            
+            var midnightCurrentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            var currentDayOfStandardWeek = midnightCurrentDate.getDay();
+            var days = [0,1,2,3,4,5,6];
+            this._rotate(days, this.options.firstDayOfWeek);
+            return days[currentDayOfStandardWeek];
         },
         
         /*
@@ -1110,10 +1113,20 @@
         _addDays : function(d, n, keepTime) {
             d.setDate(d.getDate() + n);
             if (keepTime) {
-                return d
+                return d;
             }
             return this._clearTime(d);
         },
+        
+        /*
+         * Rotate an array by specified number of places. 
+         */
+        _rotate : function(a /*array*/, p /* integer, positive integer rotate to the right, negative to the left... */){ 
+		    for(var l = a.length, p = (Math.abs(p) >= l && (p %= l), p < 0 && (p += l), p), i, x; p; p = (Math.ceil(l / p) - 1) * p - l + (l = p)) {
+		        for(i = l; i > p; x = a[--i], a[i] = a[i - p], a[i - p] = x);
+            }
+		    return a;
+		},
         
         _cloneDate : function(d) {
             return new Date(+d);
@@ -1199,7 +1212,7 @@
     });
    
     $.extend($.ui.weekCalendar, {
-        version: '1.2.0',
+        version: '1.2.1-pre',
         getter: ['getTimeslotTimes', 'getData'],
         defaults: {
             date: new Date(),
