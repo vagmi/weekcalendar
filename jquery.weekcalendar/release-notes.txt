@@ -7,7 +7,7 @@
 - Added eventAfterRender callback
 - Added support for weeks starting on any day of the week (thanks Bramus!)
 - Added better overlapping event support with the ability to have staggered or parallel layout of overlapping events. (thanks Roderik)
-- hovering over overlapping events brings them into focus (thanks Roderik)
+- Hovering over overlapping events brings them into focus (thanks Roderik)
 - Added methods for formatting dates and times using the calendar config or by passing in date / time formats.
 - Modified logic for 'scrollToTime' to scroll to the time of the reference date of the week.
 
