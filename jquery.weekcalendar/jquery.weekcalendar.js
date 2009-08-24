@@ -1,5 +1,5 @@
 /*
- * jQuery.weekCalendar v1.2.1
+ * jQuery.weekCalendar v1.2.2-pre
  * http://www.redredred.com.au/
  *
  * Requires:
@@ -1237,7 +1237,7 @@
     });
    
     $.extend($.ui.weekCalendar, {
-        version: '1.2.1',
+        version: '1.2.2-pre',
         getter: ['getTimeslotTimes', 'getData', 'formatDate', 'formatTime'],
         defaults: {
             date: new Date(),

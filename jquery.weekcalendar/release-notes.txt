@@ -1,4 +1,7 @@
-1.2.1  (CURRENT DEV RELEASE)
+1.2.2 (CURRENT DEV RELEASE)
+
+
+1.2.1 
 - Added public method 'getData' that returns the value of a named config option.
 - Added public method 'clear' that clears all calendar events from the calendar.
 - Added eventDrag callback
