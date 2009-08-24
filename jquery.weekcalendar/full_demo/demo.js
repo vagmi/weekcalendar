@@ -65,7 +65,7 @@ $(document).ready(function() {
                 }
             }).show();
              
-            $dialogContent.find(".date_holder").text(calEvent.start.getFullYear() + "-" + (calEvent.start.getMonth() + 1) + "-" + calEvent.start.getDate());
+            $dialogContent.find(".date_holder").text($calendar.weekCalendar("formatDate", calEvent.start));
             setupStartAndEndTimeFields(startField, endField, calEvent, $calendar.weekCalendar("getTimeslotTimes", calEvent.start));
             $(window).resize().resize(); //fixes a bug in modal overlay size ??
             
@@ -120,7 +120,7 @@ $(document).ready(function() {
             
             var startField = $dialogContent.find("select[name='start']").val(calEvent.start);
             var endField =  $dialogContent.find("select[name='end']").val(calEvent.end);
-            $dialogContent.find(".date_holder").text(calEvent.start.getFullYear() + "-" + (calEvent.start.getMonth() + 1) + "-" + calEvent.start.getDate());
+            $dialogContent.find(".date_holder").text($calendar.weekCalendar("formatDate", calEvent.start));
             setupStartAndEndTimeFields(startField, endField, calEvent, $calendar.weekCalendar("getTimeslotTimes", calEvent.start));
 		    $(window).resize().resize(); //fixes a bug in modal overlay size ??
         

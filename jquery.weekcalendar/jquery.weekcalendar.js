@@ -1,5 +1,5 @@
 /*
- * jQuery.weekCalendar v1.2.1-pre
+ * jQuery.weekCalendar v1.2.1
  * http://www.redredred.com.au/
  *
  * Requires:
@@ -29,9 +29,9 @@
             self._renderCalendar();
             self._loadCalEvents();
             self._resizeCalendar();
-            setTimeout(function() {
-                self._scrollToHour(new Date().getHours());
-            }, 200);
+            //setTimeout(function() {
+                self._scrollToHour(self.options.date.getHours());
+            //}, 500);
             
             $(window).unbind("resize.weekcalendar");
             $(window).bind("resize.weekcalendar", function(){
@@ -151,6 +151,22 @@
             }
             return times;
         }, 
+        
+        formatDate : function(date, format) {
+           if(format) {
+                return this._formatDate(date, format);
+           } else {
+                return this._formatDate(date, this.options.dateFormat);
+           }
+        },
+        
+        formatTime : function(date, format) {
+           if(format) {
+                return this._formatDate(date, format);
+           } else {
+                return this._formatDate(date, this.options.timeFormat);
+           }
+        },
         
         getData : function(key) {
            return this._getData(key); 
@@ -969,7 +985,16 @@
             var self = this;
             var options = this.options;
             var $scrollable = this.element.find(".calendar-scrollable-grid");
-            var $target = this.element.find(".grid-timeslot-header .hour-header:eq(" + hour + ")");
+            var slot = hour;
+            if(self.options.businessHours.limitDisplay) {
+               if(hour < self.options.businessHours.start) {
+                    slot = 0; 
+               } else if(hour > self.options.businessHours.end) {
+                    slot = self.options.businessHours.end - self.options.businessHours.start - 1;
+               }
+            }
+            
+            var $target = this.element.find(".grid-timeslot-header .hour-header:eq(" + slot + ")");
             
             $scrollable.animate({scrollTop: 0}, 0, function(){
                 var targetOffset = $target.offset().top;
@@ -1212,8 +1237,8 @@
     });
    
     $.extend($.ui.weekCalendar, {
-        version: '1.2.1-pre',
-        getter: ['getTimeslotTimes', 'getData'],
+        version: '1.2.1',
+        getter: ['getTimeslotTimes', 'getData', 'formatDate', 'formatTime'],
         defaults: {
             date: new Date(),
             timeFormat : "h:i a",
